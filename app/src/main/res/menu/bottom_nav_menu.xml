@@ -1,0 +1,6 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_home" android:title="Home" android:icon="@drawable/ic_home" />
+    <item android:id="@+id/nav_search" android:title="Tìm" android:icon="@drawable/ic_search" />
+    <item android:id="@+id/nav_notifications" android:title="Thông báo" android:icon="@drawable/ic_notification" />
+    <item android:id="@+id/nav_account" android:title="Tài khoản" android:icon="@drawable/ic_account" />
+</menu>
