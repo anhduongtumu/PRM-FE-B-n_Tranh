@@ -1,7 +1,11 @@
 package com.example.project;
 
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import androidx.recyclerview.widget.RecyclerView;
+import com.example.project.adapter.ProductAdapter;
+import com.example.project.model.Product;
+import java.util.ArrayList;
+import java.util.List;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ViewGroup;
@@ -11,9 +15,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 import com.example.project.adapter.BannerAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 public class MainActivity extends AppCompatActivity {
 
+    private RecyclerView recyclerHotProducts;
+    private ProductAdapter productAdapter;
     private ViewPager2 viewPagerBanner;
     private LinearLayout layoutIndicators;
     private BannerAdapter bannerAdapter;
@@ -35,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupBanner();
         setupAutoSlide();
+        setupProductRecyclerView();
     }
 
     private void initViews() {
@@ -126,6 +134,107 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         sliderHandler.removeCallbacks(sliderRunnable);
+    }
+
+    private void setupProductRecyclerView() {
+        recyclerHotProducts = findViewById(R.id.recyclerHotProducts);
+
+        // Create sample product data
+        List<Product> sampleProducts = createSampleProducts();
+
+        // Setup adapter
+        productAdapter = new ProductAdapter(sampleProducts);
+
+        // Setup RecyclerView
+        LinearLayoutManager layoutManager = new LinearLayoutManager(
+                this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerHotProducts.setLayoutManager(layoutManager);
+        recyclerHotProducts.setAdapter(productAdapter);
+        recyclerHotProducts.setHasFixedSize(true);
+    }
+
+    private List<Product> createSampleProducts() {
+        List<Product> products = new ArrayList<>();
+
+        products.add(new Product(
+                1,
+                "Tranh Trừu Tượng Nghệ Thuật",
+                "599.000đ",
+                "799.000đ",
+                R.drawable.tranh1, // You'll need to add these images
+                4.8f,
+                "Trừu tượng",
+                true
+        ));
+
+        products.add(new Product(
+                2,
+                "Phong Cảnh Thiên Nhiên",
+                "450.000đ",
+                R.drawable.tranh1,
+                4.6f,
+                "Phong cảnh"
+        ));
+
+        products.add(new Product(
+                3,
+                "Tranh Hiện Đại Minimalist",
+                "350.000đ",
+                "450.000đ",
+                R.drawable.tranh1,
+                4.7f,
+                "Hiện đại",
+                true
+        ));
+
+        products.add(new Product(
+                4,
+                "Nghệ Thuật Đương Đại",
+                "720.000đ",
+                R.drawable.tranh1,
+                4.9f,
+                "Hiện đại"
+        ));
+
+        products.add(new Product(
+                5,
+                "Tranh Tối Giản Đen Trắng",
+                "280.000đ",
+                R.drawable.tranh1,
+                4.4f,
+                "Tối giản"
+        ));
+
+        products.add(new Product(
+                6,
+                "Cảnh Biển Hoàng Hôn",
+                "520.000đ",
+                "650.000đ",
+                R.drawable.tranh1,
+                4.8f,
+                "Phong cảnh",
+                true
+        ));
+
+        products.add(new Product(
+                7,
+                "Abstract Colorful Dreams",
+                "680.000đ",
+                R.drawable.tranh1,
+                4.7f,
+                "Trừu tượng"
+        ));
+
+        products.add(new Product(
+                8,
+                "Rừng Xanh Mùa Thu",
+                "420.000đ",
+                R.drawable.tranh1,
+                4.5f,
+                "Phong cảnh"
+        ));
+
+        return products;
     }
 
 }
