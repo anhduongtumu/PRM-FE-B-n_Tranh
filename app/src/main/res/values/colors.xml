@@ -17,4 +17,8 @@
     <!-- Bottom navigation colors -->
     <color name="bottom_nav_selected">#6366F1</color>
     <color name="bottom_nav_unselected">#9CA3AF</color>
+
+    <!-- Text hide colors -->
+    <color name="text_hint">#FFB0B0B0</color>
+
 </resources>
