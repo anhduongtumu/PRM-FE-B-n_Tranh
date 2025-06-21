@@ -1,21 +1,25 @@
-package com.example.project;
+package com.example.project.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
-import androidx.recyclerview.widget.RecyclerView;
-import com.example.project.adapter.ProductAdapter;
-import com.example.project.model.Product;
-import java.util.ArrayList;
-import java.util.List;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.viewpager2.widget.ViewPager2;
-import com.example.project.adapter.BannerAdapter;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
+import com.example.project.R;
+import com.example.project.adapter.BannerAdapter;
+import com.example.project.adapter.ProductAdapter;
+import com.example.project.model.Product;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private ProductAdapter productAdapter;
     private ViewPager2 viewPagerBanner;
     private LinearLayout layoutIndicators;
+    private TextView tvViewAll;
     private BannerAdapter bannerAdapter;
     private Handler sliderHandler = new Handler(Looper.getMainLooper());
     private Runnable sliderRunnable;
@@ -48,6 +53,23 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         viewPagerBanner = findViewById(R.id.viewPagerBanner);
         layoutIndicators = findViewById(R.id.layoutIndicators);
+        recyclerHotProducts = findViewById(R.id.recyclerHotProducts);
+        tvViewAll = findViewById(R.id.tvViewAll);
+
+        // Navigation to LoginActivity
+        findViewById(R.id.btnLogin).setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+        });
+
+        // Navigation to RegisterActivity
+        findViewById(R.id.btnRegister).setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, RegisterActivity.class));
+        });
+
+        // Navigation to ProductListActivity
+        tvViewAll.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, ProductListActivity.class));
+        });
     }
 
     private void setupBanner() {
@@ -110,11 +132,10 @@ public class MainActivity extends AppCompatActivity {
                 int currentItem = viewPagerBanner.getCurrentItem();
                 int nextItem = (currentItem + 1) % bannerImages.length;
                 viewPagerBanner.setCurrentItem(nextItem, true);
-                sliderHandler.postDelayed(this, 3000); // 3 seconds delay
+                sliderHandler.postDelayed(this, 3000);
             }
         };
 
-        // Start auto-slide after 3 seconds
         sliderHandler.postDelayed(sliderRunnable, 3000);
     }
 
@@ -137,8 +158,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupProductRecyclerView() {
-        recyclerHotProducts = findViewById(R.id.recyclerHotProducts);
-
         // Create sample product data
         List<Product> sampleProducts = createSampleProducts();
 
@@ -155,27 +174,26 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Product> createSampleProducts() {
         List<Product> products = new ArrayList<>();
-
         products.add(new Product(
                 1,
                 "Tranh Trừu Tượng Nghệ Thuật",
                 "599.000đ",
                 "799.000đ",
-                R.drawable.tranh1, // You'll need to add these images
+                R.drawable.tranh1,
                 4.8f,
                 "Trừu tượng",
                 true
         ));
-
         products.add(new Product(
                 2,
                 "Phong Cảnh Thiên Nhiên",
                 "450.000đ",
+                "",
                 R.drawable.tranh1,
                 4.6f,
-                "Phong cảnh"
+                "Phong cảnh",
+                false
         ));
-
         products.add(new Product(
                 3,
                 "Tranh Hiện Đại Minimalist",
@@ -186,25 +204,26 @@ public class MainActivity extends AppCompatActivity {
                 "Hiện đại",
                 true
         ));
-
         products.add(new Product(
                 4,
                 "Nghệ Thuật Đương Đại",
                 "720.000đ",
+                "",
                 R.drawable.tranh1,
                 4.9f,
-                "Hiện đại"
+                "Hiện đại",
+                false
         ));
-
         products.add(new Product(
                 5,
                 "Tranh Tối Giản Đen Trắng",
                 "280.000đ",
+                "",
                 R.drawable.tranh1,
                 4.4f,
-                "Tối giản"
+                "Tối giản",
+                false
         ));
-
         products.add(new Product(
                 6,
                 "Cảnh Biển Hoàng Hôn",
@@ -215,26 +234,26 @@ public class MainActivity extends AppCompatActivity {
                 "Phong cảnh",
                 true
         ));
-
         products.add(new Product(
                 7,
                 "Abstract Colorful Dreams",
                 "680.000đ",
+                "",
                 R.drawable.tranh1,
                 4.7f,
-                "Trừu tượng"
+                "Trừu tượng",
+                false
         ));
-
         products.add(new Product(
                 8,
                 "Rừng Xanh Mùa Thu",
                 "420.000đ",
+                "",
                 R.drawable.tranh1,
                 4.5f,
-                "Phong cảnh"
+                "Phong cảnh",
+                false
         ));
-
         return products;
     }
-
 }
