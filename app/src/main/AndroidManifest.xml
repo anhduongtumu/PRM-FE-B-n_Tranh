@@ -26,6 +26,8 @@
         <activity android:name=".activity.RegisterActivity" />
         <activity android:name=".activity.ProductListActivity" />
         <activity android:name=".activity.SearchActivity" />
+        <activity android:name=".activity.ProductDetailActivity" />
+        <activity android:name=".activity.UserProfileActivity" />
 
     </application>
 
