@@ -17,6 +17,7 @@ import com.example.project.R;
 import com.example.project.adapter.BannerAdapter;
 import com.example.project.adapter.ProductAdapter;
 import com.example.project.model.Product;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private BannerAdapter bannerAdapter;
     private Handler sliderHandler = new Handler(Looper.getMainLooper());
     private Runnable sliderRunnable;
+    private BottomNavigationView bottomNavigation;
+    private ImageView btnSearch;
 
     // Banner images array
     private int[] bannerImages = {
@@ -48,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
         setupBanner();
         setupAutoSlide();
         setupProductRecyclerView();
+        setupBottomNavigation();
+        setupSearchButton();
     }
 
     private void initViews() {
@@ -55,21 +60,58 @@ public class MainActivity extends AppCompatActivity {
         layoutIndicators = findViewById(R.id.layoutIndicators);
         recyclerHotProducts = findViewById(R.id.recyclerHotProducts);
         tvViewAll = findViewById(R.id.tvViewAll);
+        bottomNavigation = findViewById(R.id.bottom_navigation);
+        btnSearch = findViewById(R.id.btnSearch);
 
-        // Navigation to LoginActivity
+        // Navigation to LoginActivity (from first version)
         findViewById(R.id.btnLogin).setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
         });
 
-        // Navigation to RegisterActivity
+        // Navigation to RegisterActivity (from first version)
         findViewById(R.id.btnRegister).setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, RegisterActivity.class));
         });
 
-        // Navigation to ProductListActivity
-        tvViewAll.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, ProductListActivity.class));
-        });
+        // Navigation to ProductListActivity (from first version)
+        if (tvViewAll != null) {
+            tvViewAll.setOnClickListener(v -> {
+                startActivity(new Intent(MainActivity.this, ProductListActivity.class));
+            });
+        }
+    }
+
+    private void setupSearchButton() {
+        if (btnSearch != null) {
+            btnSearch.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+                startActivity(intent);
+            });
+        }
+    }
+
+    private void setupBottomNavigation() {
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_home);
+            bottomNavigation.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.nav_home) {
+                    return true; // Already on home page
+                } else if (itemId == R.id.nav_search) {
+                    startActivity(new Intent(this, SearchActivity.class));
+                    return true;
+                } else if (itemId == R.id.nav_notifications) {
+                    // Handle notifications click
+                    // startActivity(new Intent(this, NotificationsActivity.class));
+                    return true;
+                } else if (itemId == R.id.nav_account) {
+                    // Handle account click
+                    // startActivity(new Intent(this, AccountActivity.class));
+                    return true;
+                }
+                return false;
+            });
+        }
     }
 
     private void setupBanner() {
@@ -132,10 +174,11 @@ public class MainActivity extends AppCompatActivity {
                 int currentItem = viewPagerBanner.getCurrentItem();
                 int nextItem = (currentItem + 1) % bannerImages.length;
                 viewPagerBanner.setCurrentItem(nextItem, true);
-                sliderHandler.postDelayed(this, 3000);
+                sliderHandler.postDelayed(this, 3000); // 3 seconds delay
             }
         };
 
+        // Start auto-slide after 3 seconds
         sliderHandler.postDelayed(sliderRunnable, 3000);
     }
 
@@ -174,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Product> createSampleProducts() {
         List<Product> products = new ArrayList<>();
+
         products.add(new Product(
                 1,
                 "Tranh Trừu Tượng Nghệ Thuật",
@@ -184,6 +228,7 @@ public class MainActivity extends AppCompatActivity {
                 "Trừu tượng",
                 true
         ));
+
         products.add(new Product(
                 2,
                 "Phong Cảnh Thiên Nhiên",
@@ -194,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
                 "Phong cảnh",
                 false
         ));
+
         products.add(new Product(
                 3,
                 "Tranh Hiện Đại Minimalist",
@@ -204,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
                 "Hiện đại",
                 true
         ));
+
         products.add(new Product(
                 4,
                 "Nghệ Thuật Đương Đại",
@@ -214,6 +261,7 @@ public class MainActivity extends AppCompatActivity {
                 "Hiện đại",
                 false
         ));
+
         products.add(new Product(
                 5,
                 "Tranh Tối Giản Đen Trắng",
@@ -224,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
                 "Tối giản",
                 false
         ));
+
         products.add(new Product(
                 6,
                 "Cảnh Biển Hoàng Hôn",
@@ -234,6 +283,7 @@ public class MainActivity extends AppCompatActivity {
                 "Phong cảnh",
                 true
         ));
+
         products.add(new Product(
                 7,
                 "Abstract Colorful Dreams",
@@ -244,6 +294,7 @@ public class MainActivity extends AppCompatActivity {
                 "Trừu tượng",
                 false
         ));
+
         products.add(new Product(
                 8,
                 "Rừng Xanh Mùa Thu",
@@ -254,6 +305,7 @@ public class MainActivity extends AppCompatActivity {
                 "Phong cảnh",
                 false
         ));
+
         return products;
     }
 }

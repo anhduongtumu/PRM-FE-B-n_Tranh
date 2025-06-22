@@ -3,7 +3,12 @@
     <!-- Primary colors -->
     <color name="primary_color">#6366F1</color>
     <color name="primary_dark">#4F46E5</color>
+    <color name="primary_light">#BBDEFB</color>
+
+    <!-- Accent Colors -->
     <color name="accent_color">#EC4899</color>
+    <color name="price_color">#4CAF50</color>
+    <color name="rating_color">#FFD700</color>
 
     <!-- Background colors -->
     <color name="background_color">#F8FAFC</color>
@@ -20,5 +25,13 @@
 
     <!-- Text hide colors -->
     <color name="text_hint">#FFB0B0B0</color>
+
+    <!-- Status Colors -->
+    <color name="success_color">#4CAF50</color>
+    <color name="error_color">#F44336</color>
+    <color name="warning_color">#FF9800</color>
+
+    <!-- Divider -->
+    <color name="divider_color">#E0E0E0</color>
 
 </resources>
