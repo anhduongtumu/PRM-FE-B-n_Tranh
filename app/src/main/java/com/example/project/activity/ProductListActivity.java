@@ -34,7 +34,27 @@ public class ProductListActivity extends AppCompatActivity {
 
         // Set up RecyclerView
         rvProductList.setLayoutManager(new LinearLayoutManager(this));
-        rvProductList.setAdapter(new ProductAdapter(products));
+        ProductAdapter adapter = new ProductAdapter(products);
+        rvProductList.setAdapter(adapter);
+
+        adapter.setOnProductClickListener(new ProductAdapter.OnProductClickListener() {
+            @Override
+            public void onProductClick(Product product) {
+                Intent intent = new Intent(ProductListActivity.this, ProductDetailActivity.class);
+                intent.putExtra("name", product.getName());
+                intent.putExtra("price", product.getPrice());
+                intent.putExtra("originalPrice", product.getOriginalPrice());
+                intent.putExtra("rating", product.getRating());
+                intent.putExtra("category", product.getCategory());
+                intent.putExtra("imageRes", product.getImageRes());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onAddToCartClick(Product product) {
+                // TODO: thêm vào giỏ hàng nếu cần
+            }
+        });
     }
 
     private List<Product> createSampleProducts() {

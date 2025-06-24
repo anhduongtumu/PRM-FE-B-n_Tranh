@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_color">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Product Image -->
+        <ImageView
+            android:id="@+id/imageProduct"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/placeholder_image"
+            android:background="#E0E0E0" />
+
+        <!-- Product Name -->
+        <TextView
+            android:id="@+id/textName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tên sản phẩm"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <!-- Price -->
+        <TextView
+            android:id="@+id/textPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Giá: 599.000đ"
+            android:textSize="16sp"
+            android:textColor="@color/price_color"
+            android:layout_marginTop="8dp" />
+
+        <!-- Original Price -->
+        <TextView
+            android:id="@+id/textOriginalPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="799.000đ"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:visibility="gone"
+            android:layout_marginTop="4dp" />
+
+        <!-- Rating -->
+        <TextView
+            android:id="@+id/textRating"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đánh giá: 4.8"
+            android:textSize="14sp"
+            android:layout_marginTop="8dp" />
+
+        <!-- Category -->
+        <TextView
+            android:id="@+id/textCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Danh mục: Trừu tượng"
+            android:textSize="14sp"
+            android:textColor="@color/primary_color"
+            android:layout_marginTop="8dp" />
+
+        <!-- Add to Cart Button -->
+        <Button
+            android:id="@+id/btnAddToCart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Thêm vào giỏ hàng"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/primary_color"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+</ScrollView>
