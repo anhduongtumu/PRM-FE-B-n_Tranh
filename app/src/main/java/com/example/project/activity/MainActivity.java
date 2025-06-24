@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -43,6 +45,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ActionBarDrawerToggle toggle;
     private ImageView btnMenu;
 
+    // Cart components
+    private FrameLayout layoutCart;
+    private ImageView btnCart;
+    private TextView tvCartBadge;
+    private int cartItemCount = 0;
+
     // Banner images array
     private int[] bannerImages = {
             R.drawable.tranh1,
@@ -57,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         initViews();
         setupDrawer();
+        setupCartHandler();
         setupBanner();
         setupAutoSlide();
         setupProductRecyclerView();
@@ -73,12 +82,56 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView = findViewById(R.id.nav_view);
         btnMenu = findViewById(R.id.btnMenu);
 
+        // Initialize cart components
+        layoutCart = findViewById(R.id.layoutCart);
+        btnCart = findViewById(R.id.btnCart);
+        tvCartBadge = findViewById(R.id.tvCartBadge);
+
         // Navigation to ProductListActivity
         if (tvViewAll != null) {
             tvViewAll.setOnClickListener(v -> {
                 startActivity(new Intent(MainActivity.this, ProductListActivity.class));
             });
         }
+    }
+
+    private void setupCartHandler() {
+        if (layoutCart != null) {
+            layoutCart.setOnClickListener(v -> {
+                // Navigate to CartActivity
+                Intent intent = new Intent(MainActivity.this, CartActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        // Initialize cart badge
+        updateCartBadge();
+    }
+
+    private void updateCartBadge() {
+        if (tvCartBadge != null) {
+            if (cartItemCount > 0) {
+                tvCartBadge.setText(String.valueOf(cartItemCount));
+                tvCartBadge.setVisibility(View.VISIBLE);
+            } else {
+                tvCartBadge.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void addToCart(Product product) {
+        // Increment cart count
+        cartItemCount++;
+
+        // Update badge
+        updateCartBadge();
+
+        // You can also save to SharedPreferences or database here
+        // For example:
+        // CartManager.getInstance().addProduct(product);
+
+        // Show a toast or snackbar to confirm addition
+        // Toast.makeText(this, product.getName() + " đã được thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
     }
 
     private void setupDrawer() {
@@ -215,6 +268,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onResume() {
         super.onResume();
         sliderHandler.postDelayed(sliderRunnable, 3000);
+        // Refresh cart count when returning to activity
+        // cartItemCount = CartManager.getInstance().getItemCount();
+        // updateCartBadge();
     }
 
     @Override
@@ -255,7 +311,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             @Override
             public void onAddToCartClick(Product product) {
-                // TODO: xử lý thêm vào giỏ hàng
+                // Handle add to cart
+                addToCart(product);
             }
         });
 

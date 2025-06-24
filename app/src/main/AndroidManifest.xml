@@ -28,7 +28,7 @@
         <activity android:name=".activity.SearchActivity" />
         <activity android:name=".activity.ProductDetailActivity" />
         <activity android:name=".activity.UserProfileActivity" />
-
+        <activity android:name=".activity.CartActivity" />
     </application>
 
 </manifest>
