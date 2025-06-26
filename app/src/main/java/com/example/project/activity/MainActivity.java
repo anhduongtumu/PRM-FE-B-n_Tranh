@@ -156,6 +156,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // Already on home page
         } else if (itemId == R.id.nav_search) {
             startActivity(new Intent(this, SearchActivity.class));
+        }else if (itemId == R.id.nav_map) {
+            // Navigate to Map Activity
+            Intent mapIntent = new Intent(MainActivity.this, MapActivity.class);
+            startActivity(mapIntent);
         } else if (itemId == R.id.nav_login) {
             startActivity(new Intent(this, LoginActivity.class));
         } else if (itemId == R.id.nav_register) {
