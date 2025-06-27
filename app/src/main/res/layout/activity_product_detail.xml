@@ -1,82 +1,171 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_color">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary_color"
+        android:elevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Product Image -->
-        <ImageView
-            android:id="@+id/imageProduct"
-            android:layout_width="match_parent"
-            android:layout_height="240dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/placeholder_image"
-            android:background="#E0E0E0" />
-
-        <!-- Product Name -->
-        <TextView
-            android:id="@+id/textName"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tên sản phẩm"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="16dp">
 
-        <!-- Price -->
-        <TextView
-            android:id="@+id/textPrice"
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="4dp"
+                app:tint="@android:color/white" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Chi tiết sản phẩm"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginStart="16dp" />
+
+            <TextView
+                android:id="@+id/tvClearCart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Xóa tất cả"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:background="?attr/selectableItemBackground"
+                android:padding="8dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- ScrollView with Product Details -->
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Giá: 599.000đ"
-            android:textSize="16sp"
-            android:textColor="@color/price_color"
-            android:layout_marginTop="8dp" />
+            android:orientation="vertical"
+            android:padding="24dp">
 
-        <!-- Original Price -->
-        <TextView
-            android:id="@+id/textOriginalPrice"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="799.000đ"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:visibility="gone"
-            android:layout_marginTop="4dp" />
+            <!-- Product Image -->
+            <ImageView
+                android:id="@+id/imageProduct"
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/placeholder_image"
+                android:background="#E0E0E0" />
 
-        <!-- Rating -->
-        <TextView
-            android:id="@+id/textRating"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Đánh giá: 4.8"
-            android:textSize="14sp"
-            android:layout_marginTop="8dp" />
+            <!-- Product Name -->
+            <TextView
+                android:id="@+id/textName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tên sản phẩm"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp" />
 
-        <!-- Category -->
-        <TextView
-            android:id="@+id/textCategory"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Danh mục: Trừu tượng"
-            android:textSize="14sp"
-            android:textColor="@color/primary_color"
-            android:layout_marginTop="8dp" />
+            <!-- Price -->
+            <TextView
+                android:id="@+id/textPrice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Giá: 599.000đ"
+                android:textSize="16sp"
+                android:textColor="@color/price_color"
+                android:layout_marginTop="8dp" />
 
-        <!-- Add to Cart Button -->
-        <Button
-            android:id="@+id/btnAddToCart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Thêm vào giỏ hàng"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="@color/primary_color"
-            android:textColor="@android:color/white" />
-    </LinearLayout>
-</ScrollView>
+            <!-- Original Price -->
+            <TextView
+                android:id="@+id/textOriginalPrice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="799.000đ"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:visibility="gone"
+                android:layout_marginTop="4dp" />
+
+            <!-- Rating -->
+            <TextView
+                android:id="@+id/textRating"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Đánh giá: 4.8"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Category -->
+            <TextView
+                android:id="@+id/textCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Danh mục: Trừu tượng"
+                android:textSize="14sp"
+                android:textColor="@color/primary_color"
+                android:layout_marginTop="8dp" />
+
+            <!-- Buttons Container -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:weightSum="10">
+
+                <!-- Wishlist Button -->
+                <ImageButton
+                    android:id="@+id/btnWishlist"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="2"
+                    android:background="@drawable/wishlist_button_background"
+                    android:contentDescription="Add to wishlist"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_favorite_border"
+                    app:tint="@color/primary_color" />
+
+                <!-- Add to Cart Button -->
+                <Button
+                    android:id="@+id/btnAddToCart"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="8"
+                    android:text="Thêm vào giỏ hàng"
+                    android:backgroundTint="@color/primary_color"
+                    android:textColor="@android:color/white"
+                    android:layout_marginEnd="8dp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
