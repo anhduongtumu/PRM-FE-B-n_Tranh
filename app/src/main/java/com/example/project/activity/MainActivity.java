@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // Cart components
     private FrameLayout layoutCart;
+    private FrameLayout layoutChat;
     private ImageView btnCart;
     private TextView tvCartBadge;
     private int cartItemCount = 0;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initViews();
         setupDrawer();
         setupCartHandler();
+        setupChatHandler();
         setupBanner();
         setupAutoSlide();
         setupProductRecyclerView();
@@ -86,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         layoutCart = findViewById(R.id.layoutCart);
         btnCart = findViewById(R.id.btnCart);
         tvCartBadge = findViewById(R.id.tvCartBadge);
+        layoutChat = findViewById(R.id.layoutChat);
 
         // Navigation to ProductListActivity
         if (tvViewAll != null) {
@@ -132,6 +135,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Show a toast or snackbar to confirm addition
         // Toast.makeText(this, product.getName() + " đã được thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+    }
+
+    private void setupChatHandler() {
+        if (layoutChat != null) {
+            layoutChat.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 
     private void setupDrawer() {
