@@ -52,6 +52,24 @@
                     android:fontFamily="sans-serif-medium"
                     android:layout_marginStart="16dp" />
 
+                <!-- Chat Icon -->
+                <FrameLayout
+                    android:id="@+id/layoutChat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="8dp"
+                    android:layout_marginEnd="8dp">
+
+                    <ImageView
+                        android:id="@+id/btnChat"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_chat_bubble"
+                        app:tint="@android:color/white"
+                        android:contentDescription="Open Chat" />
+                </FrameLayout>
+
                 <!-- Cart Icon with Badge -->
                 <FrameLayout
                     android:id="@+id/layoutCart"

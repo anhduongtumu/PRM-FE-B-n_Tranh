@@ -1,17 +1,21 @@
 package com.example.project.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.project.R;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class UserProfileActivity extends AppCompatActivity {
 
     private EditText etUsername, etEmail, etPhone, etAddress, etPassword;
     private Button btnEditSave;
     private boolean isEditMode = false; // mặc định: chỉ đọc
+
+    private BottomNavigationView bottomNavigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +57,34 @@ public class UserProfileActivity extends AppCompatActivity {
                 btnEditSave.setText("Lưu");
             }
         });
+        setupBottomNavigation();
+    }
+
+    private void setupBottomNavigation() {
+        bottomNavigation = findViewById(R.id.bottom_navigation); // ❗ QUAN TRỌNG: phải ánh xạ view trước
+
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_account); // Vì đang ở UserProfileActivity
+
+            bottomNavigation.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.nav_home) {
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); // Tránh tạo lại activity nếu đã ở trên stack
+                    startActivity(intent);
+                    return true;
+                } else if (itemId == R.id.nav_search) {
+                    startActivity(new Intent(this, SearchActivity.class));
+                    return true;
+                } else if (itemId == R.id.nav_notifications) {
+                    // startActivity(new Intent(this, NotificationsActivity.class));
+                    return true;
+                } else if (itemId == R.id.nav_account) {
+                    return true; // Đang ở trang này
+                }
+                return false;
+            });
+        }
     }
 
     private void setEditable(boolean enabled) {
