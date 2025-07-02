@@ -172,6 +172,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             // Navigate to Map Activity
             Intent mapIntent = new Intent(MainActivity.this, MapActivity.class);
             startActivity(mapIntent);
+        } else if (itemId == R.id.nav_wishlist) {
+            startActivity(new Intent(this, WishlistActivity.class));
         } else if (itemId == R.id.nav_login) {
             startActivity(new Intent(this, LoginActivity.class));
         } else if (itemId == R.id.nav_register) {
