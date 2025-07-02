@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "624070506917",
+    "project_id": "prm-chat",
+    "storage_bucket": "prm-chat.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:624070506917:android:d4600142fa5cc7dd90104c",
+        "android_client_info": {
+          "package_name": "com.example.project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_Lc_ZaWzRnERFfMATUcgPZNYHaGSRGNM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
