@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <solid android:color="?attr/colorPrimary"/>
+    <!--
+        This usually matches your app's primary theme color.
+        e.g., android:color="@color/my_app_primary"
+    -->
+
+    <corners
+        android:topLeftRadius="16dp"
+        android:topRightRadius="4dp"
+        android:bottomLeftRadius="16dp"
+        android:bottomRightRadius="16dp"/>
+    <!--
+        Adjust these values to change the bubble's shape.
+        For sent messages, often the top-right or bottom-right is less rounded
+        or squared off to give a "tail" pointing towards the edge.
+    -->
+</shape>

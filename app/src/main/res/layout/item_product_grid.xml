@@ -4,9 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
     android:background="?attr/selectableItemBackground">
 
     <LinearLayout
@@ -17,7 +17,7 @@
         <!-- Product Image Container -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="160dp">
+            android:layout_height="120dp">
 
             <ImageView
                 android:id="@+id/imageProduct"
@@ -26,13 +26,13 @@
                 android:scaleType="centerCrop"
                 android:src="@drawable/tranh1" />
 
-            <!-- Sale Badge -->
+            <!-- Sale Badge (Reduced size) -->
             <ImageView
                 android:id="@+id/imageSale"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_gravity="top|end"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:src="@drawable/ic_sale_badge"
                 android:visibility="gone" />
 
@@ -43,48 +43,48 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="6dp">
 
-            <!-- Category -->
+            <!-- Category (Reduced padding and text size) -->
             <TextView
                 android:id="@+id/textCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Trừu tượng"
-                android:textSize="10sp"
+                android:textSize="8sp"
                 android:textColor="@color/primary_color"
                 android:textStyle="bold"
                 android:background="@drawable/bg_category_tag"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:layout_marginBottom="6dp" />
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="1dp"
+                android:paddingBottom="1dp"
+                android:layout_marginBottom="4dp" />
 
-            <!-- Product Name -->
+            <!-- Product Name (Reduced text size and margin) -->
             <TextView
                 android:id="@+id/textName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Tranh Trừu Tượng Nghệ Thuật"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textColor="@color/text_primary"
                 android:textStyle="bold"
-                android:maxLines="2"
+                android:maxLines="1"
                 android:ellipsize="end"
-                android:layout_marginBottom="4dp" />
+                android:layout_marginBottom="2dp" />
 
-            <!-- Rating -->
+            <!-- Rating (Reduced margins and sizes) -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:layout_marginBottom="4dp">
 
                 <ImageView
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
                     android:src="@drawable/ic_star"
                     app:tint="@color/rating_color" />
 
@@ -92,9 +92,9 @@
                     android:id="@+id/textRating"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginStart="2dp"
                     android:text="4.8"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:textColor="@color/text_secondary" />
 
             </LinearLayout>
@@ -106,28 +106,28 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <!-- Current Price -->
+                <!-- Current Price (Reduced text size) -->
                 <TextView
                     android:id="@+id/textPrice"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="599.000đ"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="@color/price_color"
                     android:textStyle="bold" />
 
             </LinearLayout>
 
-            <!-- Original Price (if on sale) -->
+            <!-- Original Price (if on sale) (Reduced text size and margin) -->
             <TextView
                 android:id="@+id/textOriginalPrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="799.000đ"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:textColor="@color/text_secondary"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="1dp"
                 android:visibility="gone"
                 android:background="@drawable/strikethrough_text" />
 

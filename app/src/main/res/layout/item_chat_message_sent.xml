@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="64dp"
+    android:paddingLeft="64dp"
+    android:paddingEnd="8dp"
+    android:paddingRight="8dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:gravity="end">
+
+    <TextView
+        android:id="@+id/textViewMessageContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/chat_bubble_sent"
+        android:padding="12dp"
+        android:textColor="?attr/colorOnPrimary"
+        android:text="This is a sent message example."/>
+
+    <TextView
+        android:id="@+id/textViewMessageTimestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:layout_marginTop="2dp"
+        android:text="10:00 AM"/>
+</LinearLayout>
