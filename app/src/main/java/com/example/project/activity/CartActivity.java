@@ -212,34 +212,26 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         }
 
         try {
-            // Create intent to navigate to OrderConfirmationActivity
-            Intent intent = new Intent(this, OrderConfirmationActivity.class);
+            // Create intent to navigate to BillingActivity instead of OrderConfirmationActivity
+            Intent intent = new Intent(this, BillingActivity.class);
 
-            // Pass order data to OrderConfirmationActivity
+            // Pass order data to BillingActivity
             intent.putExtra("total", total);
             intent.putExtra("subtotal", subtotal);
             intent.putExtra("shipping", shipping);
             intent.putExtra("discount", discount);
             intent.putExtra("cartItems", (Serializable) new ArrayList<>(cartItems));
-            intent.putExtra("paymentMethod", "Thanh toán khi nhận hàng");
             intent.putExtra("deliveryAddress", "Nguyễn Văn A\n123 Nguyễn Thị Minh Khai, Quận 1\nTP. Hồ Chí Minh\n0901234567");
 
-            // Start OrderConfirmationActivity
+            // Start BillingActivity
             startActivity(intent);
 
-            // Clear cart after successful checkout
-            cartItems.clear();
-            cartAdapter.notifyDataSetChanged();
-
-            // Show success message
-            Toast.makeText(this, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show();
-
-            // Finish current activity
-            finish();
+            // Note: Don't clear cart or finish activity here
+            // The cart will be cleared after successful payment confirmation
 
         } catch (Exception e) {
             // Handle any errors during checkout
-            Toast.makeText(this, "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Có lỗi xảy ra khi chuyển đến trang thanh toán. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
     }

@@ -53,12 +53,12 @@ dependencies {
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
 
-//    // QR Code generation
-//    implementation ("com.google.zxing:core:3.5.1")
-//    implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
-//    // CardView
-//    implementation ("androidx.cardview:cardview:1.0.0")
-//    // ConstraintLayout
-//    implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
+    // QR Code generation
+    implementation ("com.google.zxing:core:3.5.1")
+    implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    // CardView
+    implementation ("androidx.cardview:cardview:1.0.0")
+    // ConstraintLayout
+    implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
 
 }
