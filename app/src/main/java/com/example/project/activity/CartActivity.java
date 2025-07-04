@@ -19,6 +19,7 @@ import com.example.project.model.Product;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -210,13 +211,37 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             return;
         }
 
-        // In a real app, you would navigate to checkout activity
-        // Intent intent = new Intent(this, CheckoutActivity.class);
-        // intent.putExtra("total", total);
-        // intent.putExtra("cartItems", (Serializable) cartItems);
-        // startActivity(intent);
+        try {
+            // Create intent to navigate to OrderConfirmationActivity
+            Intent intent = new Intent(this, OrderConfirmationActivity.class);
 
-        Toast.makeText(this, "Chuyển đến trang thanh toán...", Toast.LENGTH_SHORT).show();
+            // Pass order data to OrderConfirmationActivity
+            intent.putExtra("total", total);
+            intent.putExtra("subtotal", subtotal);
+            intent.putExtra("shipping", shipping);
+            intent.putExtra("discount", discount);
+            intent.putExtra("cartItems", (Serializable) new ArrayList<>(cartItems));
+            intent.putExtra("paymentMethod", "Thanh toán khi nhận hàng");
+            intent.putExtra("deliveryAddress", "Nguyễn Văn A\n123 Nguyễn Thị Minh Khai, Quận 1\nTP. Hồ Chí Minh\n0901234567");
+
+            // Start OrderConfirmationActivity
+            startActivity(intent);
+
+            // Clear cart after successful checkout
+            cartItems.clear();
+            cartAdapter.notifyDataSetChanged();
+
+            // Show success message
+            Toast.makeText(this, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show();
+
+            // Finish current activity
+            finish();
+
+        } catch (Exception e) {
+            // Handle any errors during checkout
+            Toast.makeText(this, "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
     }
 
     private void addToCart(Product product) {
