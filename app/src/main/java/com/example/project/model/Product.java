@@ -3,101 +3,81 @@ package com.example.project.model;
 import java.io.Serializable;
 
 public class Product implements Serializable {
-    private static final long serialVersionUID = 1L;
-
     private int id;
-    private String name;
-    private String price;
-    private String originalPrice;
-    private int imageRes;
-    private float rating;
-    private String category;
-    private boolean isOnSale;
+    private String productName;
+    private String briefDescription;
+    private String fullDescription;
+    private String technicalSpecifications;
+    private double price;
+    private String imageURL;
+    private int categoryID;
 
-    public Product(int id, String name, String price, int imageRes, float rating, String category) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.imageRes = imageRes;
-        this.rating = rating;
-        this.category = category;
-        this.isOnSale = false;
+    // Constructor mặc định (cần thiết cho Retrofit/Gson)
+    public Product() {
     }
 
-    public Product(int id, String name, String price, String originalPrice, int imageRes,
-                   float rating, String category, boolean isOnSale) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.originalPrice = originalPrice;
-        this.imageRes = imageRes;
-        this.rating = rating;
-        this.category = category;
-        this.isOnSale = isOnSale;
-    }
-
-    // Getters and Setters
+    // Getter và Setter
     public int getId() {
         return id;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public String getBriefDescription() {
+        return briefDescription;
+    }
+
+    public String getFullDescription() {
+        return fullDescription;
+    }
+
+    public String getTechnicalSpecifications() {
+        return technicalSpecifications;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public String getImageURL() {
+        return imageURL;
+    }
+
+    public int getCategoryID() {
+        return categoryID;
     }
 
     public void setId(int id) {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setBriefDescription(String briefDescription) {
+        this.briefDescription = briefDescription;
     }
 
-    public String getPrice() {
-        return price;
+    public void setFullDescription(String fullDescription) {
+        this.fullDescription = fullDescription;
     }
 
-    public void setPrice(String price) {
+    public void setTechnicalSpecifications(String technicalSpecifications) {
+        this.technicalSpecifications = technicalSpecifications;
+    }
+
+    public void setPrice(double price) {
         this.price = price;
     }
 
-    public String getOriginalPrice() {
-        return originalPrice;
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 
-    public void setOriginalPrice(String originalPrice) {
-        this.originalPrice = originalPrice;
-    }
-
-    public int getImageRes() {
-        return imageRes;
-    }
-
-    public void setImageRes(int imageRes) {
-        this.imageRes = imageRes;
-    }
-
-    public float getRating() {
-        return rating;
-    }
-
-    public void setRating(float rating) {
-        this.rating = rating;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public boolean isOnSale() {
-        return isOnSale;
-    }
-
-    public void setOnSale(boolean onSale) {
-        isOnSale = onSale;
+    public void setCategoryID(int categoryID) {
+        this.categoryID = categoryID;
     }
 }

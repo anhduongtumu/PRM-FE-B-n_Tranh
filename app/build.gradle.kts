@@ -60,5 +60,8 @@ dependencies {
     implementation ("androidx.cardview:cardview:1.0.0")
     // ConstraintLayout
     implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
-
+    // Retrofit
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+// Gson converter (chuyển đổi JSON thành object Java)
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 }
