@@ -9,14 +9,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.project.R;
+import com.example.project.dto.auth.LoginRequest;
+import com.example.project.dto.auth.LoginResponse;
+import com.example.project.utils.TokenManager;
+import com.example.project.utils.UserManager;
+import com.example.project.viewmodel.LoginViewModel;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText etEmail, etPassword;
     private Button btnLogin;
     private TextView tvToRegister;
+    private LoginViewModel loginViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +34,9 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         tvToRegister = findViewById(R.id.tvToRegister);
+
+        loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
+        loginViewModel.init(getApplicationContext());
 
         btnLogin.setOnClickListener(view -> loginUser());
         tvToRegister.setOnClickListener(view -> {
@@ -51,14 +61,28 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO: Replace with actual API call
-        // Giả lập thành công
-        if (email.equals("test@example.com") && password.equals("123456")) {
-            Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            finish();
-        } else {
-            Toast.makeText(this, "Sai email hoặc mật khẩu", Toast.LENGTH_SHORT).show();
-        }
+        btnLogin.setEnabled(false);
+
+        LoginRequest loginRequest = new LoginRequest(email, password);
+
+        loginViewModel.loginUser(loginRequest).observe(this, loginResponse -> {
+            btnLogin.setEnabled(true);
+            if (loginResponse != null) {
+                // Save tokens securely
+                TokenManager tokenManager = new TokenManager(getApplicationContext());
+                tokenManager.saveToken(loginResponse.getAccessToken());
+                //tokenManager.saveRefreshToken(loginResponse.getRefreshToken());
+
+                // Save user info
+                UserManager userManager = new UserManager(getApplicationContext());
+                userManager.saveUser(loginResponse.getUser());
+
+                Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+            } else {
+                Toast.makeText(LoginActivity.this, "Sai email hoặc mật khẩu", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
