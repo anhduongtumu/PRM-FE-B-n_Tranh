@@ -14,6 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.R;
 import com.example.project.adapter.ChatAdapter;
 import com.example.project.model.ChatMessage;
+import com.example.project.utils.FirebaseUtil;
+import com.google.firebase.Firebase;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -102,6 +105,12 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void loadInitialMessages() {
+//        FirebaseUtil.getMessagesBySender("1").get().addOnCompleteListener(task -> {
+//            if (task.isSuccessful()){
+//                messagesList
+//
+//            }
+//        });
         messagesList.add(new ChatMessage("1", "Hey there from Java!", System.currentTimeMillis() - 600000, otherUserId, false));
         messagesList.add(new ChatMessage("2", "Hi! How's it going in Java?", System.currentTimeMillis() - 500000, currentUserId, true));
         chatAdapter.submitList(new ArrayList<>(messagesList));
