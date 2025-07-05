@@ -37,6 +37,8 @@
             android:name=".activity.MapActivity"
             android:exported="false" />
         <activity android:name=".activity.WishlistActivity" />
+        <activity android:name=".activity.OrderConfirmationActivity" />
+        <activity android:name=".activity.BillingActivity" />
 
     </application>
 

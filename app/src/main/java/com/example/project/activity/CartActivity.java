@@ -1,6 +1,7 @@
 package com.example.project.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,6 +20,7 @@ import com.example.project.model.Product;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +55,11 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
 
     private NumberFormat currencyFormat;
 
+    // Cart management
+    private SharedPreferences cartPrefs;
+    private static final String CART_PREFS = "cart_prefs";
+    private static final String CART_COUNT_KEY = "cart_count";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +68,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         initViews();
         setupCurrencyFormat();
         setupClickListeners();
+        initCartPreferences();
         loadCartData();
         setupRecyclerViews();
         updateUI();
@@ -82,6 +90,10 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         btnCheckout = findViewById(R.id.btnCheckout);
     }
 
+    private void initCartPreferences() {
+        cartPrefs = getSharedPreferences(CART_PREFS, MODE_PRIVATE);
+    }
+
     private void setupCurrencyFormat() {
         currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
     }
@@ -99,6 +111,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     private void loadCartData() {
         // Load cart items (in a real app, this would come from database/SharedPreferences)
         cartItems = createSampleCartItems();
+
+        // Update cart count in SharedPreferences to match actual cart items
+        updateCartCount();
     }
 
     private void setupRecyclerViews() {
@@ -164,6 +179,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     private void clearCart() {
         cartItems.clear();
         cartAdapter.notifyDataSetChanged();
+        updateCartCount();
         updateUI();
         Toast.makeText(this, "Đã xóa tất cả sản phẩm khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
     }
@@ -210,13 +226,29 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             return;
         }
 
-        // In a real app, you would navigate to checkout activity
-        // Intent intent = new Intent(this, CheckoutActivity.class);
-        // intent.putExtra("total", total);
-        // intent.putExtra("cartItems", (Serializable) cartItems);
-        // startActivity(intent);
+        try {
+            // Create intent to navigate to BillingActivity instead of OrderConfirmationActivity
+            Intent intent = new Intent(this, BillingActivity.class);
 
-        Toast.makeText(this, "Chuyển đến trang thanh toán...", Toast.LENGTH_SHORT).show();
+            // Pass order data to BillingActivity
+            intent.putExtra("total", total);
+            intent.putExtra("subtotal", subtotal);
+            intent.putExtra("shipping", shipping);
+            intent.putExtra("discount", discount);
+            intent.putExtra("cartItems", (Serializable) new ArrayList<>(cartItems));
+            intent.putExtra("deliveryAddress", "Nguyễn Văn A\n123 Nguyễn Thị Minh Khai, Quận 1\nTP. Hồ Chí Minh\n0901234567");
+
+            // Start BillingActivity
+            startActivity(intent);
+
+            // Note: Don't clear cart or finish activity here
+            // The cart will be cleared after successful payment confirmation
+
+        } catch (Exception e) {
+            // Handle any errors during checkout
+            Toast.makeText(this, "Có lỗi xảy ra khi chuyển đến trang thanh toán. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
     }
 
     private void addToCart(Product product) {
@@ -225,6 +257,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             if (item.getProduct().getId() == product.getId()) {
                 item.setQuantity(item.getQuantity() + 1);
                 cartAdapter.notifyDataSetChanged();
+                updateCartCount();
                 updateUI();
                 Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
                 return;
@@ -234,8 +267,17 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         // Add new item to cart
         cartItems.add(new CartItem(product, 1));
         cartAdapter.notifyDataSetChanged();
+        updateCartCount();
         updateUI();
         Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateCartCount() {
+        int totalItems = 0;
+        for (CartItem item : cartItems) {
+            totalItems += item.getQuantity();
+        }
+        cartPrefs.edit().putInt(CART_COUNT_KEY, totalItems).apply();
     }
 
     // CartAdapter.OnCartItemListener implementation
@@ -247,6 +289,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             item.setQuantity(newQuantity);
         }
         cartAdapter.notifyDataSetChanged();
+        updateCartCount();
         updateUI();
     }
 
@@ -254,6 +297,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     public void onItemRemoved(CartItem item) {
         cartItems.remove(item);
         cartAdapter.notifyDataSetChanged();
+        updateCartCount();
         updateUI();
         Toast.makeText(this, "Đã xóa sản phẩm khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
     }
@@ -282,5 +326,12 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         super.onResume();
         // Refresh data when returning to this activity
         updateUI();
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        // Update cart count when leaving this activity
+        updateCartCount();
     }
 }
