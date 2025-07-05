@@ -1,6 +1,9 @@
-package com.example.project.model; // Adjust package name as needed
 
-public class ChatMessage {
+package com.example.project.model;
+
+import java.io.Serializable;
+
+public class ChatMessage implements Serializable {
     private String id; // Unique ID for the message
     private String text;
     private long timestamp;
