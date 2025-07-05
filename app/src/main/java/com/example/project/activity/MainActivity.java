@@ -1,6 +1,7 @@
 package com.example.project.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,6 +12,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -52,6 +55,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView tvCartBadge;
     private int cartItemCount = 0;
 
+    // Cart management - ADD THESE DECLARATIONS
+    private SharedPreferences cartPrefs;
+    private static final String CART_PREFS = "cart_prefs";
+    private static final String CART_COUNT_KEY = "cart_count";
+
     // Banner images array
     private int[] bannerImages = {
             R.drawable.tranh1,
@@ -65,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_home);
 
         initViews();
+        initCartPreferences(); // ADD THIS LINE
         setupDrawer();
         setupCartHandler();
         setupChatHandler();
@@ -98,6 +107,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    // ADD THIS METHOD
+    private void initCartPreferences() {
+        cartPrefs = getSharedPreferences(CART_PREFS, MODE_PRIVATE);
+    }
+
     private void setupCartHandler() {
         if (layoutCart != null) {
             layoutCart.setOnClickListener(v -> {
@@ -111,30 +125,42 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         updateCartBadge();
     }
 
-    private void updateCartBadge() {
-        if (tvCartBadge != null) {
-            if (cartItemCount > 0) {
-                tvCartBadge.setText(String.valueOf(cartItemCount));
-                tvCartBadge.setVisibility(View.VISIBLE);
-            } else {
-                tvCartBadge.setVisibility(View.GONE);
-            }
-        }
-    }
-
     private void addToCart(Product product) {
+        // Get current cart count
+        int currentCount = cartPrefs.getInt(CART_COUNT_KEY, 0);
+
         // Increment cart count
-        cartItemCount++;
+        int newCount = currentCount + 1;
+
+        // Save updated count
+        cartPrefs.edit().putInt(CART_COUNT_KEY, newCount).apply();
 
         // Update badge
         updateCartBadge();
 
-        // You can also save to SharedPreferences or database here
-        // For example:
-        // CartManager.getInstance().addProduct(product);
+        // Show confirmation
+        Toast.makeText(this, "Đã thêm " + product.getName() + " vào giỏ hàng", Toast.LENGTH_SHORT).show();
+    }
 
-        // Show a toast or snackbar to confirm addition
-        // Toast.makeText(this, product.getName() + " đã được thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+    private void updateCartBadge() {
+        int cartCount = cartPrefs.getInt(CART_COUNT_KEY, 0);
+
+        if (cartCount > 0) {
+            tvCartBadge.setVisibility(View.VISIBLE);
+            tvCartBadge.setText(String.valueOf(cartCount));
+        } else {
+            tvCartBadge.setVisibility(View.GONE);
+        }
+    }
+
+    public void updateCartCount(int count) {
+        cartPrefs.edit().putInt(CART_COUNT_KEY, count).apply();
+        updateCartBadge();
+    }
+
+    public void clearCartBadge() {
+        cartPrefs.edit().putInt(CART_COUNT_KEY, 0).apply();
+        updateCartBadge();
     }
 
     private void setupChatHandler() {
@@ -287,8 +313,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         sliderHandler.postDelayed(sliderRunnable, 3000);
         // Refresh cart count when returning to activity
-        // cartItemCount = CartManager.getInstance().getItemCount();
-        // updateCartBadge();
+        updateCartBadge();
     }
 
     @Override
