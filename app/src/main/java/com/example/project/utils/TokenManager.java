@@ -19,4 +19,8 @@ public class TokenManager {
     public String getToken() {
         return prefs.getString(TOKEN_KEY, null);
     }
+
+    public void clearToken() {
+        prefs.edit().remove(TOKEN_KEY).apply();
+    }
 }

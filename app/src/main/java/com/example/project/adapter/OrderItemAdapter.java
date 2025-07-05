@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.project.R;
 import com.example.project.model.CartItem;
 import com.example.project.model.Product;
@@ -60,10 +61,6 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
 
         public OrderItemViewHolder(@NonNull View itemView) {
             super(itemView);
-            initViews();
-        }
-
-        private void initViews() {
             ivProductImage = itemView.findViewById(R.id.ivProductImage);
             tvProductName = itemView.findViewById(R.id.tvProductName);
             tvProductPrice = itemView.findViewById(R.id.tvProductPrice);
@@ -74,27 +71,18 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
         public void bind(CartItem item) {
             Product product = item.getProduct();
 
-            // Set product image
-            ivProductImage.setImageResource(product.getImageRes());
+            // Load image from URL using Glide
+            Glide.with(itemView.getContext())
+                    .load(product.getImageURL())
+                    .placeholder(R.drawable.placeholder_image)
+                    .into(ivProductImage);
 
-            // Set product name
-            tvProductName.setText(product.getName());
-
-            // Set product price
-            tvProductPrice.setText(product.getPrice());
-
-            // Set quantity
+            tvProductName.setText(product.getProductName());
+            tvProductPrice.setText(formatPrice(product.getPrice()));
             tvQuantity.setText("x" + item.getQuantity());
 
-            // Calculate and set item total
-            double price = parsePrice(product.getPrice());
-            double itemTotal = price * item.getQuantity();
+            double itemTotal = product.getPrice() * item.getQuantity();
             tvItemTotal.setText(formatPrice(itemTotal));
-        }
-
-        private double parsePrice(String priceString) {
-            // Remove "đ" and "." from price string and convert to double
-            return Double.parseDouble(priceString.replaceAll("[đ.,]", ""));
         }
 
         private String formatPrice(double price) {

@@ -5,20 +5,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.example.project.R;
 import com.example.project.model.Product;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.WishlistViewHolder> {
 
     private List<Product> products;
     private OnWishlistItemClickListener listener;
+    private final NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
 
     public interface OnWishlistItemClickListener {
         void onItemClick(Product product);
@@ -55,20 +60,15 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.Wishli
 
     @Override
     public int getItemCount() {
-        return products.size();
+        return products != null ? products.size() : 0;
     }
 
     class WishlistViewHolder extends RecyclerView.ViewHolder {
-        private MaterialCardView cardView;
-        private ImageView imgProduct;
-        private TextView tvProductName;
-        private TextView tvPrice;
-        private TextView tvOriginalPrice;
-        private TextView tvDiscount;
-        private TextView tvRating;
-        private TextView tvCategory;
-        private ImageView btnRemoveWishlist;
-        private MaterialButton btnAddToCart;
+        private final MaterialCardView cardView;
+        private final ImageView imgProduct;
+        private final TextView tvProductName, tvPrice, tvOriginalPrice, tvDiscount, tvRating, tvCategory;
+        private final ImageView btnRemoveWishlist;
+        private final MaterialButton btnAddToCart;
 
         public WishlistViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -85,54 +85,65 @@ public class WishlistAdapter extends RecyclerView.Adapter<WishlistAdapter.Wishli
         }
 
         public void bind(Product product, int position) {
-            // Set product image
-            imgProduct.setImageResource(product.getImageRes());
+            // Load image from URL using Glide
+            Glide.with(itemView.getContext())
+                    .load(product.getImageURL())
+                    .placeholder(R.drawable.placeholder_image)
+                    .into(imgProduct);
 
             // Set product name
-            tvProductName.setText(product.getName());
+            tvProductName.setText(product.getProductName());
 
-            // Format and set prices
-//            DecimalFormat formatter = new DecimalFormat("#,###");
-//            tvPrice.setText(formatter.format(product.getPrice()) + "đ");
-//
-//            if (product.getOriginalPrice() > product.getPrice()) {
-//                tvOriginalPrice.setVisibility(View.VISIBLE);
-//                tvOriginalPrice.setText(formatter.format(product.getOriginalPrice()) + "đ");
-//
-//                // Calculate and show discount percentage
-//                int discountPercent = (int) (((product.getOriginalPrice() - product.getPrice())
-//                        / (float) product.getOriginalPrice()) * 100);
-//                tvDiscount.setVisibility(View.VISIBLE);
-//                tvDiscount.setText("-" + discountPercent + "%");
-//            } else {
-//                tvOriginalPrice.setVisibility(View.GONE);
-//                tvDiscount.setVisibility(View.GONE);
-//            }
+            // Giá hiện tại
+            double currentPrice = product.getPrice();
+            tvPrice.setText(formatPrice(currentPrice));
 
-            // Set rating
+            // Giá gốc và giảm giá (nếu có)
+            double originalPrice = parsePrice(product.getOriginalPrice()); // ✔ Đúng
+            if (originalPrice > currentPrice) {
+                tvOriginalPrice.setVisibility(View.VISIBLE);
+                tvOriginalPrice.setText(formatPrice(originalPrice));
+
+                int discountPercent = (int) ((originalPrice - currentPrice) / originalPrice * 100);
+                tvDiscount.setVisibility(View.VISIBLE);
+                tvDiscount.setText("-" + discountPercent + "%");
+            } else {
+                tvOriginalPrice.setVisibility(View.GONE);
+                tvDiscount.setVisibility(View.GONE);
+            }
+
+            // Rating & category
             tvRating.setText(String.valueOf(product.getRating()));
+            tvCategory.setText(
+                    product.getCategory() != null ? product.getCategory().toString() : "Đang cập nhật"
+            );
 
-            // Set category
-            tvCategory.setText(product.getCategory());
-
-            // Set click listeners
+            // Click listeners
             cardView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onItemClick(product);
-                }
+                if (listener != null) listener.onItemClick(product);
             });
 
             btnRemoveWishlist.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onRemoveFromWishlist(product, position);
-                }
+                if (listener != null) listener.onRemoveFromWishlist(product, position);
             });
 
             btnAddToCart.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onAddToCart(product);
-                }
+                if (listener != null) listener.onAddToCart(product);
             });
         }
+
+        private double parsePrice(String priceString) {
+            if (priceString == null || priceString.isEmpty()) return 0;
+            try {
+                return Double.parseDouble(priceString.replaceAll("[^\\d]", ""));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+
+        private String formatPrice(double price) {
+            return currencyFormat.format(price) + "đ";
+        }
+
     }
 }
