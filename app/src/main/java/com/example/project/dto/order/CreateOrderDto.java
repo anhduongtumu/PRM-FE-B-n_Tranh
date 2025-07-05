@@ -1,10 +1,6 @@
+package com.example.project.dto;
 
-package com.example.project.model;
-
-import java.io.Serializable;
-
-public class Order implements Serializable {
-    private int id;
+public class CreateOrderDto {
     private int cartID;
     private int userID;
     private String paymentMethod;
@@ -12,10 +8,7 @@ public class Order implements Serializable {
     private String orderStatus;
     private String orderDate;
 
-    public Order() {}
-
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public CreateOrderDto() {}
 
     public int getCartID() { return cartID; }
     public void setCartID(int cartID) { this.cartID = cartID; }
