@@ -67,19 +67,18 @@ public class CartItem implements Serializable {
         this.addedTime = addedTime;
     }
 
-    // Helper methods
+    // Tính tổng tiền từ giá * số lượng
     public double getTotalPrice() {
         if (product == null) return 0.0;
-
-        String priceString = product.getPrice();
-        double price = Double.parseDouble(priceString.replaceAll("[đ.,]", ""));
-        return price * quantity;
+        return product.getPrice() * quantity;
     }
 
+    // Có chọn màu hoặc size không?
     public boolean hasVariants() {
         return selectedSize != null || selectedColor != null;
     }
 
+    // equals và hashCode để so sánh sản phẩm (theo id và biến thể)
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -87,7 +86,7 @@ public class CartItem implements Serializable {
 
         CartItem cartItem = (CartItem) obj;
 
-        if (product != null ? !product.equals(cartItem.product) : cartItem.product != null)
+        if (product != null ? product.getId() != cartItem.product.getId() : cartItem.product != null)
             return false;
         if (selectedSize != null ? !selectedSize.equals(cartItem.selectedSize) : cartItem.selectedSize != null)
             return false;
@@ -96,7 +95,7 @@ public class CartItem implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = product != null ? product.hashCode() : 0;
+        int result = product != null ? product.getId() : 0;
         result = 31 * result + (selectedSize != null ? selectedSize.hashCode() : 0);
         result = 31 * result + (selectedColor != null ? selectedColor.hashCode() : 0);
         return result;
@@ -105,7 +104,7 @@ public class CartItem implements Serializable {
     @Override
     public String toString() {
         return "CartItem{" +
-                "product=" + product +
+                "product=" + (product != null ? product.getProductName() : null) +
                 ", quantity=" + quantity +
                 ", selectedSize='" + selectedSize + '\'' +
                 ", selectedColor='" + selectedColor + '\'' +

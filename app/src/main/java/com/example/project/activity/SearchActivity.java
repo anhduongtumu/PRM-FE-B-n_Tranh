@@ -144,8 +144,8 @@ public class SearchActivity extends AppCompatActivity {
         String lowercaseQuery = query.toLowerCase().trim();
 
         for (Product product : filteredProducts) {
-            if (product.getName().toLowerCase().contains(lowercaseQuery) ||
-                    product.getCategory().toLowerCase().contains(lowercaseQuery)) {
+            if (product.getProductName().toLowerCase().contains(lowercaseQuery) ||
+                    product.getCategory().getCategoryName().toLowerCase().contains(lowercaseQuery)) {
                 searchResults.add(product);
             }
         }
@@ -247,45 +247,27 @@ public class SearchActivity extends AppCompatActivity {
         List<Product> products = new ArrayList<>();
 
         // Trừu tượng
-        products.add(new Product(1, "Tranh Trừu Tượng Nghệ Thuật", "599.000đ", "799.000đ",
-                R.drawable.tranh1, 4.8f, "Trừu tượng", true));
-        products.add(new Product(7, "Abstract Colorful Dreams", "680.000đ",
-                R.drawable.tranh2, 4.7f, "Trừu tượng"));
-        products.add(new Product(9, "Geometric Abstract Art", "420.000đ",
-                R.drawable.tranh3, 4.6f, "Trừu tượng"));
-        products.add(new Product(10, "Modern Abstract Waves", "550.000đ", "650.000đ",
-                R.drawable.tranh1, 4.9f, "Trừu tượng", true));
+        products.add(new Product(
+                1,
+                "Tranh Trừu Tượng Nghệ Thuật",
+                "599000",
+                "799000",
+                "https://example.com/tranh1.jpg",
+                4,
+                "Trừu tượng",
+                "true"
+        ));
 
-        // Phong cảnh
-        products.add(new Product(2, "Phong Cảnh Thiên Nhiên", "450.000đ",
-                R.drawable.tranh2, 4.6f, "Phong cảnh"));
-        products.add(new Product(6, "Cảnh Biển Hoàng Hôn", "520.000đ", "650.000đ",
-                R.drawable.tranh3, 4.8f, "Phong cảnh", true));
-        products.add(new Product(8, "Rừng Xanh Mùa Thu", "420.000đ",
-                R.drawable.tranh1, 4.5f, "Phong cảnh"));
-        products.add(new Product(11, "Mountain Landscape", "480.000đ",
-                R.drawable.tranh2, 4.7f, "Phong cảnh"));
-
-        // Hiện đại
-        products.add(new Product(3, "Tranh Hiện Đại Minimalist", "350.000đ", "450.000đ",
-                R.drawable.tranh3, 4.7f, "Hiện đại", true));
-        products.add(new Product(4, "Nghệ Thuật Đương Đại", "720.000đ",
-                R.drawable.tranh1, 4.9f, "Hiện đại"));
-        products.add(new Product(12, "Contemporary Art Piece", "620.000đ",
-                R.drawable.tranh2, 4.8f, "Hiện đại"));
-        products.add(new Product(13, "Urban Modern Style", "380.000đ",
-                R.drawable.tranh3, 4.4f, "Hiện đại"));
-
-        // Tối giản
-        products.add(new Product(5, "Tranh Tối Giản Đen Trắng", "280.000đ",
-                R.drawable.tranh1, 4.4f, "Tối giản"));
-        products.add(new Product(14, "Minimal Line Art", "320.000đ",
-                R.drawable.tranh2, 4.6f, "Tối giản"));
-        products.add(new Product(15, "Simple Geometric Design", "250.000đ",
-                R.drawable.tranh3, 4.3f, "Tối giản"));
-        products.add(new Product(16, "Clean Modern Art", "390.000đ", "450.000đ",
-                R.drawable.tranh1, 4.7f, "Tối giản", true));
-
+        products.add(new Product(
+                2,
+                "Phong Cảnh Thiên Nhiên",
+                "450000",
+                "0",
+                "https://example.com/tranh2.jpg",
+                4,
+                "Phong cảnh",
+                "false"
+        ));
         return products;
     }
 }

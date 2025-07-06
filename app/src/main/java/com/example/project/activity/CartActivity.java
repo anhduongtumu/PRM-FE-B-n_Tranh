@@ -1,6 +1,7 @@
 package com.example.project.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,6 +20,7 @@ import com.example.project.model.Product;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,6 @@ import java.util.Locale;
 
 public class CartActivity extends AppCompatActivity implements CartAdapter.OnCartItemListener {
 
-    // Views
     private ImageView btnBack;
     private TextView tvClearCart;
     private LinearLayout layoutEmptyCart;
@@ -41,17 +42,19 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     private LinearLayout layoutDiscount;
     private MaterialButton btnCheckout;
 
-    // Data
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems;
 
-    // Price calculations
     private double subtotal = 0.0;
-    private double shipping = 30000.0; // 30,000 VND
+    private double shipping = 30000.0;
     private double discount = 0.0;
     private double total = 0.0;
 
     private NumberFormat currencyFormat;
+
+    private SharedPreferences cartPrefs;
+    private static final String CART_PREFS = "cart_prefs";
+    private static final String CART_COUNT_KEY = "cart_count";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +64,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         initViews();
         setupCurrencyFormat();
         setupClickListeners();
+        initCartPreferences();
         loadCartData();
         setupRecyclerViews();
         updateUI();
@@ -82,27 +86,27 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         btnCheckout = findViewById(R.id.btnCheckout);
     }
 
+    private void initCartPreferences() {
+        cartPrefs = getSharedPreferences(CART_PREFS, MODE_PRIVATE);
+    }
+
     private void setupCurrencyFormat() {
         currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
     }
 
     private void setupClickListeners() {
         btnBack.setOnClickListener(v -> finish());
-
         tvClearCart.setOnClickListener(v -> clearCart());
-
         btnApplyPromo.setOnClickListener(v -> applyPromoCode());
-
         btnCheckout.setOnClickListener(v -> proceedToCheckout());
     }
 
     private void loadCartData() {
-        // Load cart items (in a real app, this would come from database/SharedPreferences)
         cartItems = createSampleCartItems();
+        updateCartCount();
     }
 
     private void setupRecyclerViews() {
-        // Cart Items RecyclerView
         cartAdapter = new CartAdapter(cartItems, this);
         recyclerCartItems.setLayoutManager(new LinearLayoutManager(this));
         recyclerCartItems.setAdapter(cartAdapter);
@@ -125,17 +129,11 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     private void calculatePrices() {
         subtotal = 0.0;
         for (CartItem item : cartItems) {
-            double price = parsePrice(item.getProduct().getPrice());
+            double price = item.getProduct().getPrice();
             subtotal += price * item.getQuantity();
         }
 
-        // Free shipping for orders over 1,000,000 VND
-        if (subtotal >= 1000000) {
-            shipping = 0.0;
-        } else {
-            shipping = 30000.0;
-        }
-
+        shipping = subtotal >= 1000000 ? 0.0 : 30000.0;
         total = subtotal + shipping - discount;
     }
 
@@ -152,11 +150,6 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         }
     }
 
-    private double parsePrice(String priceString) {
-        // Remove "đ" and "." from price string and convert to double
-        return Double.parseDouble(priceString.replaceAll("[đ.,]", ""));
-    }
-
     private String formatPrice(double price) {
         return currencyFormat.format(price) + "đ";
     }
@@ -164,22 +157,21 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     private void clearCart() {
         cartItems.clear();
         cartAdapter.notifyDataSetChanged();
+        updateCartCount();
         updateUI();
         Toast.makeText(this, "Đã xóa tất cả sản phẩm khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
     }
 
     private void applyPromoCode() {
         String promoCode = etPromoCode.getText().toString().trim();
-
         if (promoCode.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập mã giảm giá", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Sample promo codes
         switch (promoCode.toUpperCase()) {
             case "TRANH10":
-                discount = subtotal * 0.1; // 10% discount
+                discount = subtotal * 0.1;
                 Toast.makeText(this, "Áp dụng mã giảm giá thành công! Giảm 10%", Toast.LENGTH_SHORT).show();
                 break;
             case "FREESHIP":
@@ -191,7 +183,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                 }
                 break;
             case "WELCOME50":
-                discount = Math.min(50000, subtotal * 0.05); // 50k max or 5%
+                discount = Math.min(50000, subtotal * 0.05);
                 Toast.makeText(this, "Chào mừng! Giảm " + formatPrice(discount), Toast.LENGTH_SHORT).show();
                 break;
             default:
@@ -210,35 +202,29 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             return;
         }
 
-        // In a real app, you would navigate to checkout activity
-        // Intent intent = new Intent(this, CheckoutActivity.class);
-        // intent.putExtra("total", total);
-        // intent.putExtra("cartItems", (Serializable) cartItems);
-        // startActivity(intent);
-
-        Toast.makeText(this, "Chuyển đến trang thanh toán...", Toast.LENGTH_SHORT).show();
-    }
-
-    private void addToCart(Product product) {
-        // Check if product already exists in cart
-        for (CartItem item : cartItems) {
-            if (item.getProduct().getId() == product.getId()) {
-                item.setQuantity(item.getQuantity() + 1);
-                cartAdapter.notifyDataSetChanged();
-                updateUI();
-                Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        try {
+            Intent intent = new Intent(this, BillingActivity.class);
+            intent.putExtra("total", total);
+            intent.putExtra("subtotal", subtotal);
+            intent.putExtra("shipping", shipping);
+            intent.putExtra("discount", discount);
+            intent.putExtra("cartItems", (Serializable) new ArrayList<>(cartItems));
+            intent.putExtra("deliveryAddress", "Nguyễn Văn A\n123 Nguyễn Thị Minh Khai, Quận 1\nTP. Hồ Chí Minh\n0901234567");
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(this, "Có lỗi xảy ra khi chuyển đến trang thanh toán. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
         }
-
-        // Add new item to cart
-        cartItems.add(new CartItem(product, 1));
-        cartAdapter.notifyDataSetChanged();
-        updateUI();
-        Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
     }
 
-    // CartAdapter.OnCartItemListener implementation
+    private void updateCartCount() {
+        int totalItems = 0;
+        for (CartItem item : cartItems) {
+            totalItems += item.getQuantity();
+        }
+        cartPrefs.edit().putInt(CART_COUNT_KEY, totalItems).apply();
+    }
+
     @Override
     public void onQuantityChanged(CartItem item, int newQuantity) {
         if (newQuantity <= 0) {
@@ -247,6 +233,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             item.setQuantity(newQuantity);
         }
         cartAdapter.notifyDataSetChanged();
+        updateCartCount();
         updateUI();
     }
 
@@ -254,33 +241,29 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     public void onItemRemoved(CartItem item) {
         cartItems.remove(item);
         cartAdapter.notifyDataSetChanged();
+        updateCartCount();
         updateUI();
         Toast.makeText(this, "Đã xóa sản phẩm khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
     }
 
     private List<CartItem> createSampleCartItems() {
         List<CartItem> items = new ArrayList<>();
-
-        // Sample cart items
-        items.add(new CartItem(
-                new Product(1, "Tranh Trừu Tượng Nghệ Thuật", "599.000đ", "799.000đ",
-                        R.drawable.tranh1, 4.8f, "Trừu tượng", true), 2));
-
-        items.add(new CartItem(
-                new Product(2, "Phong Cảnh Thiên Nhiên", "450.000đ", "",
-                        R.drawable.tranh2, 4.6f, "Phong cảnh", false), 1));
-
-        items.add(new CartItem(
-                new Product(3, "Tranh Hiện Đại Minimalist", "350.000đ", "450.000đ",
-                        R.drawable.tranh3, 4.7f, "Hiện đại", true), 1));
-
+        Product p1 = new Product(1, "Tranh Trừu Tượng Nghệ Thuật", "Mô tả", "Chi tiết", "60x40cm", 599000, "https://example.com/tranh1.jpg", "Trừu tượng");
+        Product p2 = new Product(2, "Phong Cảnh Thiên Nhiên", "Mô tả", "Chi tiết", "50x50cm", 450000, "https://example.com/tranh2.jpg", "Phong cảnh");
+        items.add(new CartItem(p1, 2));
+        items.add(new CartItem(p2, 1));
         return items;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh data when returning to this activity
         updateUI();
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        updateCartCount();
     }
 }

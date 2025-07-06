@@ -1,9 +1,11 @@
 package com.example.project.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,11 +27,19 @@ import com.example.project.R;
 import com.example.project.adapter.BannerAdapter;
 import com.example.project.adapter.ProductAdapter;
 import com.example.project.model.Product;
+import com.example.project.network.ApiClient;
+import com.example.project.service.AuthService;
+import com.example.project.service.ProductService;
+import com.example.project.utils.TokenManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -52,6 +64,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView tvCartBadge;
     private int cartItemCount = 0;
 
+    // Cart management - ADD THESE DECLARATIONS
+    private SharedPreferences cartPrefs;
+    private static final String CART_PREFS = "cart_prefs";
+    private static final String CART_COUNT_KEY = "cart_count";
+
     // Banner images array
     private int[] bannerImages = {
             R.drawable.tranh1,
@@ -65,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_home);
 
         initViews();
+        initCartPreferences(); // ADD THIS LINE
         setupDrawer();
         setupCartHandler();
         setupChatHandler();
@@ -72,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setupAutoSlide();
         setupProductRecyclerView();
         setupBottomNavigation();
+        updateNavigationMenu();
     }
 
     private void initViews() {
@@ -98,6 +117,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    // ADD THIS METHOD
+    private void initCartPreferences() {
+        cartPrefs = getSharedPreferences(CART_PREFS, MODE_PRIVATE);
+    }
+
     private void setupCartHandler() {
         if (layoutCart != null) {
             layoutCart.setOnClickListener(v -> {
@@ -111,30 +135,42 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         updateCartBadge();
     }
 
-    private void updateCartBadge() {
-        if (tvCartBadge != null) {
-            if (cartItemCount > 0) {
-                tvCartBadge.setText(String.valueOf(cartItemCount));
-                tvCartBadge.setVisibility(View.VISIBLE);
-            } else {
-                tvCartBadge.setVisibility(View.GONE);
-            }
-        }
-    }
-
     private void addToCart(Product product) {
+        // Get current cart count
+        int currentCount = cartPrefs.getInt(CART_COUNT_KEY, 0);
+
         // Increment cart count
-        cartItemCount++;
+        int newCount = currentCount + 1;
+
+        // Save updated count
+        cartPrefs.edit().putInt(CART_COUNT_KEY, newCount).apply();
 
         // Update badge
         updateCartBadge();
 
-        // You can also save to SharedPreferences or database here
-        // For example:
-        // CartManager.getInstance().addProduct(product);
+        // Show confirmation
+        Toast.makeText(this, "Đã thêm " + product.getProductName() + " vào giỏ hàng", Toast.LENGTH_SHORT).show();
+    }
 
-        // Show a toast or snackbar to confirm addition
-        // Toast.makeText(this, product.getName() + " đã được thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+    private void updateCartBadge() {
+        int cartCount = cartPrefs.getInt(CART_COUNT_KEY, 0);
+
+        if (cartCount > 0) {
+            tvCartBadge.setVisibility(View.VISIBLE);
+            tvCartBadge.setText(String.valueOf(cartCount));
+        } else {
+            tvCartBadge.setVisibility(View.GONE);
+        }
+    }
+
+    public void updateCartCount(int count) {
+        cartPrefs.edit().putInt(CART_COUNT_KEY, count).apply();
+        updateCartBadge();
+    }
+
+    public void clearCartBadge() {
+        cartPrefs.edit().putInt(CART_COUNT_KEY, 0).apply();
+        updateCartBadge();
     }
 
     private void setupChatHandler() {
@@ -165,17 +201,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int itemId = item.getItemId();
 
         if (itemId == R.id.nav_home) {
-            // Already on home page
+            // Home
         } else if (itemId == R.id.nav_search) {
             startActivity(new Intent(this, SearchActivity.class));
-        }else if (itemId == R.id.nav_map) {
-            // Navigate to Map Activity
-            Intent mapIntent = new Intent(MainActivity.this, MapActivity.class);
-            startActivity(mapIntent);
+        } else if (itemId == R.id.nav_map) {
+            startActivity(new Intent(this, MapActivity.class));
         } else if (itemId == R.id.nav_wishlist) {
             startActivity(new Intent(this, WishlistActivity.class));
         } else if (itemId == R.id.nav_login) {
-            startActivity(new Intent(this, LoginActivity.class));
+            SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+            boolean isLoggedIn = prefs.getBoolean("is_logged_in", false);
+
+            if (isLoggedIn) {
+                logoutUser();
+            } else {
+                startActivity(new Intent(this, LoginActivity.class));
+            }
         } else if (itemId == R.id.nav_register) {
             startActivity(new Intent(this, RegisterActivity.class));
         }
@@ -287,8 +328,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         sliderHandler.postDelayed(sliderRunnable, 3000);
         // Refresh cart count when returning to activity
-        // cartItemCount = CartManager.getInstance().getItemCount();
-        // updateCartBadge();
+        updateCartBadge();
     }
 
     @Override
@@ -307,132 +347,108 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void setupProductRecyclerView() {
-        // Tạo dữ liệu sản phẩm mẫu
-        List<Product> sampleProducts = createSampleProducts();
+        // Gọi API để lấy danh sách sản phẩm từ server
+        ProductService productService = ApiClient.getClient(this).create(ProductService.class);
+        Call<List<Product>> call = productService.getAllProducts();
 
-        // Khởi tạo adapter và gán dữ liệu
-        productAdapter = new ProductAdapter(sampleProducts);
-
-        // Gán listener NGAY SAU KHI KHỞI TẠO adapter
-        productAdapter.setOnProductClickListener(new ProductAdapter.OnProductClickListener() {
+        call.enqueue(new Callback<List<Product>>() {
             @Override
-            public void onProductClick(Product product) {
-                Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
-                intent.putExtra("name", product.getName());
-                intent.putExtra("price", product.getPrice());
-                intent.putExtra("originalPrice", product.getOriginalPrice());
-                intent.putExtra("rating", product.getRating());
-                intent.putExtra("category", product.getCategory());
-                intent.putExtra("imageRes", product.getImageRes());
-                startActivity(intent);
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Product> productList = response.body();
+
+                    // Khởi tạo adapter và gán dữ liệu thực từ API
+                    productAdapter = new ProductAdapter(productList);
+
+                    productAdapter.setOnProductClickListener(new ProductAdapter.OnProductClickListener() {
+                        @Override
+                        public void onProductClick(Product product) {
+                            Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
+                            intent.putExtra("name", product.getProductName());
+                            intent.putExtra("price", product.getPrice());
+                            intent.putExtra("originalPrice", product.getOriginalPrice());
+                            intent.putExtra("rating", product.getRating());
+                            String categoryName = "Không rõ";
+                            if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
+                                categoryName = product.getCategory().getCategoryName();
+                            }
+                            intent.putExtra("category", categoryName);
+                            intent.putExtra("imageRes", product.getImageURL()); // Nếu imageURL là String từ API
+                            startActivity(intent);
+                        }
+
+                        @Override
+                        public void onAddToCartClick(Product product) {
+                            addToCart(product);
+                        }
+                    });
+
+                    LinearLayoutManager layoutManager = new LinearLayoutManager(
+                            MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
+                    recyclerHotProducts.setLayoutManager(layoutManager);
+                    recyclerHotProducts.setAdapter(productAdapter);
+                    recyclerHotProducts.setHasFixedSize(true);
+                } else {
+                    Toast.makeText(MainActivity.this, "Không thể tải sản phẩm", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
-            public void onAddToCartClick(Product product) {
-                // Handle add to cart
-                addToCart(product);
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
-        // Gán layout và adapter cho RecyclerView
-        LinearLayoutManager layoutManager = new LinearLayoutManager(
-                this, LinearLayoutManager.HORIZONTAL, false);
-        recyclerHotProducts.setLayoutManager(layoutManager);
-        recyclerHotProducts.setAdapter(productAdapter);
-        recyclerHotProducts.setHasFixedSize(true);
     }
 
-    private List<Product> createSampleProducts() {
-        List<Product> products = new ArrayList<>();
+    private void updateNavigationMenu() {
+        SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+        boolean isLoggedIn = prefs.getBoolean("is_logged_in", false);
 
-        products.add(new Product(
-                1,
-                "Tranh Trừu Tượng Nghệ Thuật",
-                "599.000đ",
-                "799.000đ",
-                R.drawable.tranh1,
-                4.8f,
-                "Trừu tượng",
-                true
-        ));
+        Menu menu = navigationView.getMenu();
+        MenuItem loginItem = menu.findItem(R.id.nav_login);
+        MenuItem registerItem = menu.findItem(R.id.nav_register);
 
-        products.add(new Product(
-                2,
-                "Phong Cảnh Thiên Nhiên",
-                "450.000đ",
-                "",
-                R.drawable.tranh1,
-                4.6f,
-                "Phong cảnh",
-                false
-        ));
+        if (isLoggedIn) {
+            loginItem.setTitle("Đăng xuất");
+            registerItem.setVisible(false); // Ẩn đăng ký nếu muốn
+        } else {
+            loginItem.setTitle("Đăng nhập");
+            registerItem.setVisible(true);
+        }
+    }
 
-        products.add(new Product(
-                3,
-                "Tranh Hiện Đại Minimalist",
-                "350.000đ",
-                "450.000đ",
-                R.drawable.tranh1,
-                4.7f,
-                "Hiện đại",
-                true
-        ));
+    private void logoutUser() {
+        AuthService authService = ApiClient.getClient(this).create(AuthService.class);
+        Call<Void> call = authService.logout();
 
-        products.add(new Product(
-                4,
-                "Nghệ Thuật Đương Đại",
-                "720.000đ",
-                "",
-                R.drawable.tranh1,
-                4.9f,
-                "Hiện đại",
-                false
-        ));
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    // Xóa token và trạng thái đăng nhập
+                    TokenManager tokenManager = new TokenManager(MainActivity.this);
+                    tokenManager.clearToken();
 
-        products.add(new Product(
-                5,
-                "Tranh Tối Giản Đen Trắng",
-                "280.000đ",
-                "",
-                R.drawable.tranh1,
-                4.4f,
-                "Tối giản",
-                false
-        ));
+                    SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+                    prefs.edit().clear().apply();
 
-        products.add(new Product(
-                6,
-                "Cảnh Biển Hoàng Hôn",
-                "520.000đ",
-                "650.000đ",
-                R.drawable.tranh1,
-                4.8f,
-                "Phong cảnh",
-                true
-        ));
+                    Toast.makeText(MainActivity.this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
 
-        products.add(new Product(
-                7,
-                "Abstract Colorful Dreams",
-                "680.000đ",
-                "",
-                R.drawable.tranh1,
-                4.7f,
-                "Trừu tượng",
-                false
-        ));
+                    updateNavigationMenu(); // cập nhật lại menu
 
-        products.add(new Product(
-                8,
-                "Rừng Xanh Mùa Thu",
-                "420.000đ",
-                "",
-                R.drawable.tranh1,
-                4.5f,
-                "Phong cảnh",
-                false
-        ));
+                    // Optionally chuyển về LoginActivity hoặc Home
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(MainActivity.this, "Không thể đăng xuất", Toast.LENGTH_SHORT).show();
+                }
+            }
 
-        return products;
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

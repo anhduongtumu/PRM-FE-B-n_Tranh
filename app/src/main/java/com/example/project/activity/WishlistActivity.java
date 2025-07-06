@@ -237,36 +237,25 @@ public class WishlistActivity extends AppCompatActivity implements NavigationVie
 
         // Corrected parameter order: (id, name, price, originalPrice, imageRes, rating, category, isOnSale)
         products.add(new Product(
-                1,                               // int id
-                "Tranh Trừu Tượng Hiện Đại",   // String name
-                "899.000đ",                     // String price
-                "1.200.000đ",                   // String originalPrice
-                R.drawable.tranh1,              // int imageRes
-                4.8f,                           // float rating
-                "Trừu tượng",                   // String category
-                true                            // boolean isOnSale
+                1,
+                "Tranh Trừu Tượng Nghệ Thuật",
+                "599000",
+                "799000",
+                "https://example.com/tranh1.jpg",
+                4,
+                "Trừu tượng",
+                "true"
         ));
 
         products.add(new Product(
-                2,                               // int id
-                "Tranh Phong Cảnh Thiên Nhiên", // String name
-                "750.000đ",                     // String price
-                "950.000đ",                     // String originalPrice
-                R.drawable.tranh2,              // int imageRes
-                4.6f,                           // float rating
-                "Phong cảnh",                   // String category
-                true                            // boolean isOnSale
-        ));
-
-        products.add(new Product(
-                3,                               // int id
-                "Tranh Tối Giản Scandinavian",  // String name
-                "650.000đ",                     // String price
-                "800.000đ",                     // String originalPrice
-                R.drawable.tranh3,              // int imageRes
-                4.7f,                           // float rating
-                "Tối giản",                     // String category
-                true                            // boolean isOnSale
+                2,
+                "Phong Cảnh Thiên Nhiên",
+                "450000",
+                "0",
+                "https://example.com/tranh2.jpg",
+                4,
+                "Phong cảnh",
+                "false"
         ));
 
         return products;

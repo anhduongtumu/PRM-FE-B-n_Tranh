@@ -18,7 +18,22 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="80dp"/>
+        android:layout_marginTop="40dp"/>
+
+    <EditText
+        android:id="@+id/etRegisterUsername"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Tên người dùng"
+        android:background="@drawable/bg_input_field"
+        android:padding="12dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_hint"
+        android:inputType="textPersonName"
+        app:layout_constraintTop_toBottomOf="@id/tvRegisterTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
 
     <EditText
         android:id="@+id/etRegisterEmail"
@@ -30,10 +45,40 @@
         android:padding="12dp"
         android:textColor="@color/text_primary"
         android:textColorHint="@color/text_hint"
-        app:layout_constraintTop_toBottomOf="@id/tvRegisterTitle"
+        app:layout_constraintTop_toBottomOf="@id/etRegisterUsername"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="12dp"/>
+
+    <EditText
+        android:id="@+id/etRegisterPhone"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Số điện thoại"
+        android:inputType="phone"
+        android:background="@drawable/bg_input_field"
+        android:padding="12dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_hint"
+        app:layout_constraintTop_toBottomOf="@id/etRegisterEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <EditText
+        android:id="@+id/etRegisterAddress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Địa chỉ"
+        android:inputType="textPostalAddress"
+        android:background="@drawable/bg_input_field"
+        android:padding="12dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_hint"
+        app:layout_constraintTop_toBottomOf="@id/etRegisterPhone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
 
     <EditText
         android:id="@+id/etRegisterPassword"
@@ -45,10 +90,10 @@
         android:padding="12dp"
         android:textColor="@color/text_primary"
         android:textColorHint="@color/text_hint"
-        app:layout_constraintTop_toBottomOf="@id/etRegisterEmail"
+        app:layout_constraintTop_toBottomOf="@id/etRegisterAddress"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="12dp"/>
 
     <EditText
         android:id="@+id/etConfirmPassword"
@@ -63,7 +108,7 @@
         app:layout_constraintTop_toBottomOf="@id/etRegisterPassword"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="12dp"/>
 
     <Button
         android:id="@+id/btnRegister"

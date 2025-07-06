@@ -24,15 +24,12 @@ public class ProductListActivity extends AppCompatActivity {
 
         rvProductList = findViewById(R.id.rvProductList);
 
-        // Initialize RecyclerView
         setupRecyclerView();
     }
 
     private void setupRecyclerView() {
-        // Sample product list (replace with actual data source, e.g., API call)
         List<Product> products = createSampleProducts();
 
-        // Set up RecyclerView
         rvProductList.setLayoutManager(new LinearLayoutManager(this));
         ProductAdapter adapter = new ProductAdapter(products);
         rvProductList.setAdapter(adapter);
@@ -41,18 +38,18 @@ public class ProductListActivity extends AppCompatActivity {
             @Override
             public void onProductClick(Product product) {
                 Intent intent = new Intent(ProductListActivity.this, ProductDetailActivity.class);
-                intent.putExtra("name", product.getName());
+                intent.putExtra("name", product.getProductName());
                 intent.putExtra("price", product.getPrice());
                 intent.putExtra("originalPrice", product.getOriginalPrice());
                 intent.putExtra("rating", product.getRating());
                 intent.putExtra("category", product.getCategory());
-                intent.putExtra("imageRes", product.getImageRes());
+                intent.putExtra("imageUrl", product.getImageURL());
                 startActivity(intent);
             }
 
             @Override
             public void onAddToCartClick(Product product) {
-                // TODO: thêm vào giỏ hàng nếu cần
+                // TODO: Thêm vào giỏ hàng
             }
         });
     }
@@ -63,80 +60,90 @@ public class ProductListActivity extends AppCompatActivity {
         products.add(new Product(
                 1,
                 "Tranh Trừu Tượng Nghệ Thuật",
-                "599.000đ",
-                "799.000đ",
-                R.drawable.tranh1, // You'll need to add these images
-                4.8f,
+                "599000",
+                "799000",
+                "https://example.com/tranh1.jpg",
+                4,
                 "Trừu tượng",
-                true
+                "true"
         ));
 
         products.add(new Product(
                 2,
                 "Phong Cảnh Thiên Nhiên",
-                "450.000đ",
-                R.drawable.tranh1,
-                4.6f,
-                "Phong cảnh"
-        ));
-
-        products.add(new Product(
-                3,
-                "Tranh Hiện Đại Minimalist",
-                "350.000đ",
-                "450.000đ",
-                R.drawable.tranh1,
-                4.7f,
-                "Hiện đại",
-                true
-        ));
-
-        products.add(new Product(
+                "450000",
+                "0",
+                "https://example.com/tranh2.jpg",
                 4,
-                "Nghệ Thuật Đương Đại",
-                "720.000đ",
-                R.drawable.tranh1,
-                4.9f,
-                "Hiện đại"
-        ));
-
-        products.add(new Product(
-                5,
-                "Tranh Tối Giản Đen Trắng",
-                "280.000đ",
-                R.drawable.tranh1,
-                4.4f,
-                "Tối giản"
-        ));
-
-        products.add(new Product(
-                6,
-                "Cảnh Biển Hoàng Hôn",
-                "520.000đ",
-                "650.000đ",
-                R.drawable.tranh1,
-                4.8f,
                 "Phong cảnh",
-                true
+                "false"
         ));
 
-        products.add(new Product(
-                7,
-                "Abstract Colorful Dreams",
-                "680.000đ",
-                R.drawable.tranh1,
-                4.7f,
-                "Trừu tượng"
-        ));
-
-        products.add(new Product(
-                8,
-                "Rừng Xanh Mùa Thu",
-                "420.000đ",
-                R.drawable.tranh1,
-                4.5f,
-                "Phong cảnh"
-        ));
+//        products.add(new Product(
+//                3,
+//                "Tranh Hiện Đại Minimalist",
+//                350000,
+//                450000,
+//                "https://example.com/tranh3.jpg",
+//                4.7f,
+//                "Hiện đại",
+//                true
+//        ));
+//
+//        products.add(new Product(
+//                4,
+//                "Nghệ Thuật Đương Đại",
+//                720000,
+//                0,
+//                "https://example.com/tranh4.jpg",
+//                4.9f,
+//                "Hiện đại",
+//                false
+//        ));
+//
+//        products.add(new Product(
+//                5,
+//                "Tranh Tối Giản Đen Trắng",
+//                280000,
+//                0,
+//                "https://example.com/tranh5.jpg",
+//                4.4f,
+//                "Tối giản",
+//                false
+//        ));
+//
+//        products.add(new Product(
+//                6,
+//                "Cảnh Biển Hoàng Hôn",
+//                520000,
+//                650000,
+//                "https://example.com/tranh6.jpg",
+//                4.8f,
+//                "Phong cảnh",
+//                true
+//        ));
+//
+//        products.add(new Product(
+//                7,
+//                "Abstract Colorful Dreams",
+//                680000,
+//                0,
+//                "https://example.com/tranh7.jpg",
+//                4.7f,
+//                "Trừu tượng",
+//                false
+//        ));
+//
+//        products.add(new Product(
+//                8,
+//                "Rừng Xanh Mùa Thu",
+//                420000,
+//                0,
+//                "https://example.com/tranh8.jpg",
+//                4.5f,
+//                "Phong cảnh",
+//                false
+//        ));
 
         return products;
     }
