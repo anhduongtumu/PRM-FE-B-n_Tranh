@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.R; // Adjust if your R file is in a different location
 import com.example.project.model.ChatMessage;
+import com.google.firebase.Timestamp;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -54,7 +56,11 @@ public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ChatMessage message = getItem(position);
-        String formattedTime = sdf.format(new Date(message.getTimestamp()));
+        Timestamp ts = message.getTimestamp();
+        String formattedTime = ts != null
+                ? sdf.format(ts.toDate())
+                : "N/A"; // or fallback: sdf.format(new Date())
+
 
         if (holder.getItemViewType() == VIEW_TYPE_SENT) {
             ((SentMessageViewHolder) holder).bind(message, formattedTime);
@@ -102,17 +108,36 @@ public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolde
     static class ChatMessageDiffCallback extends DiffUtil.ItemCallback<ChatMessage> {
         @Override
         public boolean areItemsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
-            return oldItem.getId().equals(newItem.getId());
+            boolean result = safeEquals(oldItem.getId(), newItem.getId());
+            android.util.Log.d("ChatDiffUtil", "areItemsTheSame: oldId=" + oldItem.getId()
+                    + ", newId=" + newItem.getId() + " -> " + result);
+            return result;
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
-            // For simple data class, you might compare all fields or rely on a well-defined equals()
-            // For this example, if IDs are same and texts are same, we consider content same.
-            // A more robust equals() in ChatMessage would be better.
-            return oldItem.getText().equals(newItem.getText()) &&
-                    oldItem.getTimestamp() == newItem.getTimestamp() &&
-                    oldItem.isSentByUser() == newItem.isSentByUser();
+            boolean textSame = safeEquals(oldItem.getText(), newItem.getText());
+            boolean timestampSame = safeEquals(oldItem.getTimestamp(), newItem.getTimestamp());
+            boolean sentByUserSame = oldItem.isSentByUser() == newItem.isSentByUser();
+            boolean result = textSame && timestampSame && sentByUserSame;
+
+            android.util.Log.d("ChatDiffUtil", "areContentsTheSame:"
+                    + "\n   oldText=" + oldItem.getText()
+                    + ", newText=" + newItem.getText()
+                    + " -> " + textSame
+                    + "\n   oldTimestamp=" + oldItem.getTimestamp()
+                    + ", newTimestamp=" + newItem.getTimestamp()
+                    + " -> " + timestampSame
+                    + "\n   oldSentByUser=" + oldItem.isSentByUser()
+                    + ", newSentByUser=" + newItem.isSentByUser()
+                    + " -> " + sentByUserSame
+                    + "\n   FINAL RESULT -> " + result);
+            return result;
+        }
+
+        private static boolean safeEquals(Object a, Object b) {
+            if (a == null) return b == null;
+            return a.equals(b);
         }
     }
 }

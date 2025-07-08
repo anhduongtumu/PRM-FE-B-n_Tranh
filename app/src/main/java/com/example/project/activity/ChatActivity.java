@@ -6,6 +6,8 @@ import android.os.Looper;
 import android.view.MenuItem; // Needed for handling Toolbar item clicks
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull; // For @NonNull annotation
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar; // Import Toolbar
@@ -15,7 +17,11 @@ import com.example.project.R;
 import com.example.project.adapter.ChatAdapter;
 import com.example.project.model.ChatMessage;
 import com.example.project.utils.FirebaseUtil;
+import com.example.project.utils.UserManager;
 import com.google.firebase.Firebase;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +35,11 @@ public class ChatActivity extends AppCompatActivity {
     private ChatAdapter chatAdapter;
     private List<ChatMessage> messagesList = new ArrayList<>();
 
-    private final String currentUserId = "currentUser123";
-    private final String otherUserId = "otherUser456";
+    private String currentUserId;
+    private String otherUserId = "1"; // admin UID
+    private String chatId;
+
+    private UserManager userManager;
 
     private Toolbar toolbarChat; // Declare Toolbar
 
@@ -50,12 +59,23 @@ public class ChatActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Chat"); // Set a title for the chat screen
         }
 
+        userManager = new UserManager(this);
+        currentUserId = userManager.getUser().getId();
+
         recyclerViewChat = findViewById(R.id.recyclerViewChat);
         editTextMessage = findViewById(R.id.editTextMessage);
         buttonSend = findViewById(R.id.buttonSend);
 
         setupRecyclerView();
-        loadInitialMessages();
+        chatId = FirebaseUtil.generateChatId(currentUserId, otherUserId);
+//        loadInitialMessages();
+        FirebaseUtil.createChatIfNotExists(
+                chatId,
+                currentUserId,
+                otherUserId,
+                unused -> loadMessagesFromFirestore(),
+                e -> Toast.makeText(this, "Failed to create chat: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+        );
 
         buttonSend.setOnClickListener(v -> sendMessage());
     }
@@ -67,34 +87,48 @@ public class ChatActivity extends AppCompatActivity {
         recyclerViewChat.setLayoutManager(layoutManager);
     }
 
+//    private void sendMessage() {
+//        String messageText = editTextMessage.getText().toString().trim();
+//        if (!messageText.isEmpty()) {
+//            ChatMessage newMessage = new ChatMessage(
+//                    UUID.randomUUID().toString(),
+//                    messageText,
+//                    System.currentTimeMillis(),
+//                    currentUserId,
+//                    true
+//            );
+//            addNewMessageToList(newMessage);
+//            editTextMessage.setText("");
+//            simulateReply(messageText);
+//        }
+//    }
+
     private void sendMessage() {
         String messageText = editTextMessage.getText().toString().trim();
         if (!messageText.isEmpty()) {
-            ChatMessage newMessage = new ChatMessage(
-                    UUID.randomUUID().toString(),
-                    messageText,
-                    System.currentTimeMillis(),
+            FirebaseUtil.sendMessage(
                     currentUserId,
-                    true
+                    otherUserId,
+                    messageText,
+                    unused -> editTextMessage.setText(""),
+                    e -> Toast.makeText(this, "Failed to send: " + e.getMessage(), Toast.LENGTH_SHORT).show()
             );
-            addNewMessageToList(newMessage);
-            editTextMessage.setText("");
-            simulateReply(messageText);
         }
     }
 
-    private void simulateReply(String originalText) {
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            ChatMessage replyMessage = new ChatMessage(
-                    UUID.randomUUID().toString(),
-                    "Okay, Java sees you said: \"" + originalText + "\"",
-                    System.currentTimeMillis(),
-                    otherUserId,
-                    false
-            );
-            addNewMessageToList(replyMessage);
-        }, 1200);
-    }
+
+//    private void simulateReply(String originalText) {
+//        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+//            ChatMessage replyMessage = new ChatMessage(
+//                    UUID.randomUUID().toString(),
+//                    "Okay, Java sees you said: \"" + originalText + "\"",
+//                    System.currentTimeMillis(),
+//                    otherUserId,
+//                    false
+//            );
+//            addNewMessageToList(replyMessage);
+//        }, 1200);
+//    }
 
     private void addNewMessageToList(ChatMessage message) {
         messagesList.add(message);
@@ -104,20 +138,66 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void loadInitialMessages() {
-//        FirebaseUtil.getMessagesBySender("1").get().addOnCompleteListener(task -> {
-//            if (task.isSuccessful()){
-//                messagesList
-//
-//            }
-//        });
-        messagesList.add(new ChatMessage("1", "Hey there from Java!", System.currentTimeMillis() - 600000, otherUserId, false));
-        messagesList.add(new ChatMessage("2", "Hi! How's it going in Java?", System.currentTimeMillis() - 500000, currentUserId, true));
-        chatAdapter.submitList(new ArrayList<>(messagesList));
-        if (!messagesList.isEmpty()) {
-            recyclerViewChat.scrollToPosition(chatAdapter.getItemCount() - 1);
-        }
+//    private void loadInitialMessages() {
+////        FirebaseUtil.getMessagesBySender("1").get().addOnCompleteListener(task -> {
+////            if (task.isSuccessful()){
+////                messagesList
+////
+////            }
+////        });
+//        messagesList.add(new ChatMessage("1", "Hey there from Java!", System.currentTimeMillis() - 600000, otherUserId, false));
+//        messagesList.add(new ChatMessage("2", "Hi! How's it going in Java?", System.currentTimeMillis() - 500000, currentUserId, true));
+//        chatAdapter.submitList(new ArrayList<>(messagesList));
+//        if (!messagesList.isEmpty()) {
+//            recyclerViewChat.scrollToPosition(chatAdapter.getItemCount() - 1);
+//        }
+//    }
+
+    private void loadMessagesFromFirestore() {
+        FirebaseUtil.getMessagesInChat(chatId)
+            .orderBy("timestamp")
+            .addSnapshotListener(this, (snapshots, e) -> {
+                if (e != null) {
+                    e.printStackTrace();
+                    return;
+                }
+                if (snapshots != null) {
+                    boolean shouldScroll = false;
+                    for (var dc : snapshots.getDocumentChanges()) {
+                        DocumentSnapshot docSnap = dc.getDocument();
+                        ChatMessage message = docSnap.toObject(ChatMessage.class);
+                        message.setId(docSnap.getId());
+                        // Log the timestamp for debugging
+                        Timestamp ts = message.getTimestamp();
+                        if (ts != null) {
+                            android.util.Log.d("ChatTimestamp", "Message ID: " + message.getId() +
+                                    " | Timestamp: " + ts.toDate().toString());
+                        } else {
+                            android.util.Log.d("ChatTimestamp", "Message ID: " + message.getId() +
+                                    " | Timestamp: null (not yet set by Firestore)");
+                        }
+                        switch (dc.getType()) {
+                            case ADDED:
+                                if (messagesList.stream().noneMatch(m -> m.getId().equals(message.getId()))) {
+                                    messagesList.add(message);
+                                    shouldScroll = true;
+                                }
+                                break;
+                            case REMOVED:
+                                messagesList.removeIf(m -> m.getId().equals(message.getId()));
+                                break;
+                        }
+                    }
+
+                    chatAdapter.submitList(new ArrayList<>(messagesList));
+                    if (shouldScroll) {
+                        recyclerViewChat.scrollToPosition(chatAdapter.getItemCount() - 1);
+                    }
+                }
+            });
+
     }
+
 
     // Handle Toolbar item selections (specifically the Up button)
     @Override

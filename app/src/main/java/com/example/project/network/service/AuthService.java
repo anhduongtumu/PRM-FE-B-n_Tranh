@@ -1,7 +1,7 @@
 // ApiService.java
 package com.example.project.network.service;
 
-import com.example.project.dto.CreateUserDto;
+import com.example.project.dto.user.CreateUserDto;
 import com.example.project.dto.auth.LoginRequest;
 import com.example.project.dto.auth.LoginResponse;
 import com.example.project.model.User;

@@ -14,9 +14,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.project.R;
 import com.example.project.dto.auth.LoginRequest;
 import com.example.project.dto.auth.LoginResponse;
+
+import com.example.project.dto.auth.UserDto;
 import com.example.project.network.ApiClient;
 import com.example.project.network.service.AuthService;
 import com.example.project.utils.TokenManager;
+import com.example.project.utils.UserManager;
+
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -29,6 +33,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView tvToRegister;
 
     private TokenManager tokenManager;
+    private UserManager userManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +48,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // Khởi tạo TokenManager
         tokenManager = new TokenManager(this);
+        userManager = new UserManager(this);
 
         // Bắt sự kiện login
         btnLogin.setOnClickListener(view -> loginUser());
@@ -81,9 +87,12 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String accessToken = response.body().getAccessToken();
+                    UserDto user  = response.body().getUser();
 
                     // Lưu token vào SharedPreferences
                     tokenManager.saveToken(accessToken);
+                    userManager.saveUser(user);
+                    
 
                     SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
                     prefs.edit().putBoolean("is_logged_in", true).apply();
