@@ -3,6 +3,7 @@ package com.example.project.model;
 import java.io.Serializable;
 
 public class CartItem implements Serializable {
+    private int id;
     private Product product;
     private int quantity;
     private String selectedSize;
@@ -27,6 +28,14 @@ public class CartItem implements Serializable {
     }
 
     // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public Product getProduct() {
         return product;
     }
