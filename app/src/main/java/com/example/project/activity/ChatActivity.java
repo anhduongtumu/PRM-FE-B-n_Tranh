@@ -165,6 +165,11 @@ public class ChatActivity extends AppCompatActivity {
                     boolean shouldScroll = false;
                     for (var dc : snapshots.getDocumentChanges()) {
                         DocumentSnapshot docSnap = dc.getDocument();
+
+                        android.util.Log.d("ChatSnapshot", "Doc ID: " + docSnap.getId()
+                                + " | Pending Writes: " + docSnap.getMetadata().hasPendingWrites()
+                                + " | Data: " + docSnap.getData());
+
                         ChatMessage message = docSnap.toObject(ChatMessage.class);
                         message.setId(docSnap.getId());
                         // Log the timestamp for debugging
@@ -183,12 +188,20 @@ public class ChatActivity extends AppCompatActivity {
                                     shouldScroll = true;
                                 }
                                 break;
+                            case MODIFIED:
+                                for (int i = 0; i < messagesList.size(); i++) {
+                                    if (messagesList.get(i).getId().equals(message.getId())) {
+                                        messagesList.set(i, message);
+                                        shouldScroll = true;
+                                        break;
+                                    }
+                                }
+                                break;
                             case REMOVED:
                                 messagesList.removeIf(m -> m.getId().equals(message.getId()));
                                 break;
                         }
                     }
-
                     chatAdapter.submitList(new ArrayList<>(messagesList));
                     if (shouldScroll) {
                         recyclerViewChat.scrollToPosition(chatAdapter.getItemCount() - 1);

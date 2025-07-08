@@ -121,17 +121,17 @@ public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolde
             boolean sentByUserSame = oldItem.isSentByUser() == newItem.isSentByUser();
             boolean result = textSame && timestampSame && sentByUserSame;
 
-            android.util.Log.d("ChatDiffUtil", "areContentsTheSame:"
-                    + "\n   oldText=" + oldItem.getText()
-                    + ", newText=" + newItem.getText()
-                    + " -> " + textSame
-                    + "\n   oldTimestamp=" + oldItem.getTimestamp()
-                    + ", newTimestamp=" + newItem.getTimestamp()
-                    + " -> " + timestampSame
-                    + "\n   oldSentByUser=" + oldItem.isSentByUser()
-                    + ", newSentByUser=" + newItem.isSentByUser()
-                    + " -> " + sentByUserSame
-                    + "\n   FINAL RESULT -> " + result);
+//            android.util.Log.d("ChatDiffUtil", "areContentsTheSame:"
+//                    + "\n   oldText=" + oldItem.getText()
+//                    + ", newText=" + newItem.getText()
+//                    + " -> " + textSame
+//                    + "\n   oldTimestamp=" + oldItem.getTimestamp()
+//                    + ", newTimestamp=" + newItem.getTimestamp()
+//                    + " -> " + timestampSame
+//                    + "\n   oldSentByUser=" + oldItem.isSentByUser()
+//                    + ", newSentByUser=" + newItem.isSentByUser()
+//                    + " -> " + sentByUserSame
+//                    + "\n   FINAL RESULT -> " + result);
             return result;
         }
 

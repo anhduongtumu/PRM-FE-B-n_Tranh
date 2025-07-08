@@ -44,6 +44,8 @@ public class ChatMessage {
         return senderId;
     }
 
+
+
     public boolean isSentByUser() {
         return isSentByUser;
     }
@@ -51,6 +53,18 @@ public class ChatMessage {
     // It's good practice to also have setters if you might modify these fields after creation,
     // but for an immutable-by-default message, getters are often enough.
     // If you use DiffUtil, you might also want to override equals() and hashCode().
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public void setSenderId(String senderId) {
+        this.senderId = senderId;
+    }
+
+    public void setSentByUser(boolean sentByUser) {
+        isSentByUser = sentByUser;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
