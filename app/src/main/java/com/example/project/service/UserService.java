@@ -1,8 +1,8 @@
 package com.example.project.service;
 
 import com.example.project.model.User;
-import com.example.project.dto.CreateUserDto;
-import com.example.project.dto.UpdateUserDto;
+import com.example.project.dto.user.CreateUserDto;
+import com.example.project.dto.user.UpdateUserDto;
 
 import java.util.List;
 

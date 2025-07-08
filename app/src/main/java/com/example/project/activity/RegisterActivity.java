@@ -11,7 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.project.R;
-import com.example.project.dto.CreateUserDto;
+import com.example.project.dto.user.CreateUserDto;
 import com.example.project.model.User;
 import com.example.project.network.ApiClient;
 import com.example.project.service.AuthService;
