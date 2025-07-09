@@ -21,6 +21,9 @@ public interface CartItemService {
     @GET("/api/cartitems/{id}")
     Call<CartItem> getCartItemById(@Path("id") int id);
 
+    @GET("/api/cartitems/cart/{cartId}")
+    Call<List<CartItem>> getCartItemsByCartId(@Path("cartId") int cartId);
+
     @POST("/api/cartitems")
     Call<CartItem> createCartItem(@Body CreateCartItemDto cartItem);
 

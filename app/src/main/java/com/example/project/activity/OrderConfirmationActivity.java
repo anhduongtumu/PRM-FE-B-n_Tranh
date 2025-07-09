@@ -178,16 +178,16 @@ public class OrderConfirmationActivity extends AppCompatActivity {
 
         // Create sample order items (same as cart items)
         items.add(new CartItem(
-                new Product(1, "Tranh Trừu Tượng Nghệ Thuật", "599.000đ", "799.000đ",
-                        R.drawable.tranh1, 4.8f, "Trừu tượng", true), 2));
+                new Product(1, "Tranh Trừu Tượng Nghệ Thuật", "Mô tả ngắn", "Chi tiết", "60x40cm",
+                        599000, "https://example.com/tranh1.jpg", "Trừu tượng"), 2));
 
         items.add(new CartItem(
-                new Product(2, "Phong Cảnh Thiên Nhiên", "450.000đ", "",
-                        R.drawable.tranh2, 4.6f, "Phong cảnh", false), 1));
+                new Product(2, "Phong Cảnh Thiên Nhiên", "Mô tả ngắn", "Chi tiết", "50x50cm",
+                        450000, "https://example.com/tranh2.jpg", "Phong cảnh"), 1));
 
         items.add(new CartItem(
-                new Product(3, "Tranh Hiện Đại Minimalist", "350.000đ", "450.000đ",
-                        R.drawable.tranh3, 4.7f, "Hiện đại", true), 1));
+                new Product(3, "Tranh Hiện Đại Minimalist", "Mô tả ngắn", "Chi tiết", "70x50cm",
+                        350000, "https://example.com/tranh3.jpg", "Hiện đại"), 1));
 
         return items;
     }

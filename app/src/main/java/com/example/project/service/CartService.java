@@ -3,6 +3,7 @@ package com.example.project.service;
 import com.example.project.model.Cart;
 import com.example.project.dto.CreateCartDto;
 import com.example.project.dto.UpdateCartDto;
+import com.google.gson.JsonObject;
 
 import java.util.List;
 
@@ -22,7 +23,10 @@ public interface CartService {
     Call<Cart> getCartById(@Path("id") int id);
 
     @GET("/api/carts/user/{userId}")
-    Call<List<Cart>> getCartsByUserId(@Path("userId") int userId);
+    Call<Cart> getCartByUserId(@Path("userId") int userId);
+
+    @POST("api/carts/add-cart/{userId}")
+    Call<Cart> addProductToCart(@Path("userId") int userId, @Body JsonObject body);
 
     @POST("/api/carts")
     Call<Cart> createCart(@Body CreateCartDto cart);

@@ -45,6 +45,19 @@
                 android:ellipsize="end"
                 android:fontFamily="sans-serif-medium" />
 
+            <!-- Category -->
+            <TextView
+                android:id="@+id/tvCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Danh mục"
+                android:textSize="10sp"
+                android:textColor="#555555"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif" />
+
             <!-- Product Price (Reduced text size) -->
             <TextView
                 android:id="@+id/tvProductPrice"

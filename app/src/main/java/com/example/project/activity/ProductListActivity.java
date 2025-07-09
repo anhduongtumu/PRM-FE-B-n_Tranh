@@ -2,16 +2,27 @@ package com.example.project.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.project.R;
 import com.example.project.adapter.ProductAdapter;
 import com.example.project.model.Product;
+import com.example.project.network.ApiClient;
+import com.example.project.service.ProductService;
+import com.example.project.utils.CartManager;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ProductListActivity extends AppCompatActivity {
 
@@ -22,122 +33,55 @@ public class ProductListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_list);
 
-        rvProductList = findViewById(R.id.rvProductList);
+        // Thiết lập Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        // Initialize RecyclerView
-        setupRecyclerView();
+        // Xử lý nút quay lại
+        ImageView btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> onBackPressed());
+
+        rvProductList = findViewById(R.id.rvProductList);
+        rvProductList.setLayoutManager(new LinearLayoutManager(this));
+
+        fetchProductsFromApi();
     }
 
-    private void setupRecyclerView() {
-        // Sample product list (replace with actual data source, e.g., API call)
-        List<Product> products = createSampleProducts();
+    private void fetchProductsFromApi() {
+        ProductService productService = ApiClient.getClient(this).create(ProductService.class);
 
-        // Set up RecyclerView
-        rvProductList.setLayoutManager(new LinearLayoutManager(this));
-        ProductAdapter adapter = new ProductAdapter(products);
-        rvProductList.setAdapter(adapter);
-
-        adapter.setOnProductClickListener(new ProductAdapter.OnProductClickListener() {
+        productService.getAllProducts().enqueue(new Callback<List<Product>>() {
             @Override
-            public void onProductClick(Product product) {
-                Intent intent = new Intent(ProductListActivity.this, ProductDetailActivity.class);
-                intent.putExtra("name", product.getName());
-                intent.putExtra("price", product.getPrice());
-                intent.putExtra("originalPrice", product.getOriginalPrice());
-                intent.putExtra("rating", product.getRating());
-                intent.putExtra("category", product.getCategory());
-                intent.putExtra("imageRes", product.getImageRes());
-                startActivity(intent);
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Product> products = response.body();
+                    ProductAdapter adapter = new ProductAdapter(products);
+                    rvProductList.setAdapter(adapter);
+
+                    adapter.setOnProductClickListener(new ProductAdapter.OnProductClickListener() {
+                        @Override
+                        public void onProductClick(Product product) {
+                            Intent intent = new Intent(ProductListActivity.this, ProductDetailActivity.class);
+                            intent.putExtra("product", product);
+                            startActivity(intent);
+                        }
+
+                        @Override
+                        public void onAddToCartClick(Product product) {
+                            CartManager.addToCart(ProductListActivity.this, product, () ->
+                                    Toast.makeText(ProductListActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show()
+                            );
+                        }
+                    });
+                } else {
+                    Toast.makeText(ProductListActivity.this, "Không thể tải sản phẩm", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
-            public void onAddToCartClick(Product product) {
-                // TODO: thêm vào giỏ hàng nếu cần
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                Toast.makeText(ProductListActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private List<Product> createSampleProducts() {
-        List<Product> products = new ArrayList<>();
-
-        products.add(new Product(
-                1,
-                "Tranh Trừu Tượng Nghệ Thuật",
-                "599.000đ",
-                "799.000đ",
-                R.drawable.tranh1, // You'll need to add these images
-                4.8f,
-                "Trừu tượng",
-                true
-        ));
-
-        products.add(new Product(
-                2,
-                "Phong Cảnh Thiên Nhiên",
-                "450.000đ",
-                R.drawable.tranh1,
-                4.6f,
-                "Phong cảnh"
-        ));
-
-        products.add(new Product(
-                3,
-                "Tranh Hiện Đại Minimalist",
-                "350.000đ",
-                "450.000đ",
-                R.drawable.tranh1,
-                4.7f,
-                "Hiện đại",
-                true
-        ));
-
-        products.add(new Product(
-                4,
-                "Nghệ Thuật Đương Đại",
-                "720.000đ",
-                R.drawable.tranh1,
-                4.9f,
-                "Hiện đại"
-        ));
-
-        products.add(new Product(
-                5,
-                "Tranh Tối Giản Đen Trắng",
-                "280.000đ",
-                R.drawable.tranh1,
-                4.4f,
-                "Tối giản"
-        ));
-
-        products.add(new Product(
-                6,
-                "Cảnh Biển Hoàng Hôn",
-                "520.000đ",
-                "650.000đ",
-                R.drawable.tranh1,
-                4.8f,
-                "Phong cảnh",
-                true
-        ));
-
-        products.add(new Product(
-                7,
-                "Abstract Colorful Dreams",
-                "680.000đ",
-                R.drawable.tranh1,
-                4.7f,
-                "Trừu tượng"
-        ));
-
-        products.add(new Product(
-                8,
-                "Rừng Xanh Mùa Thu",
-                "420.000đ",
-                R.drawable.tranh1,
-                4.5f,
-                "Phong cảnh"
-        ));
-
-        return products;
     }
 }
