@@ -60,7 +60,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         userManager = new UserManager(this);
-        currentUserId = userManager.getUser().getId();
+        currentUserId = String.valueOf(userManager.getUser().getId());
 
         recyclerViewChat = findViewById(R.id.recyclerViewChat);
         editTextMessage = findViewById(R.id.editTextMessage);

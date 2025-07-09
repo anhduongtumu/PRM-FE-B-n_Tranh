@@ -3,6 +3,8 @@ package com.example.project.model;
 import java.io.Serializable;
 
 public class CartItem implements Serializable {
+    private int id;                 // ID của CartItem (trong DB)
+    private int cartID;            // ID của Cart mà item này thuộc về
     private Product product;
     private int quantity;
     private String selectedSize;
@@ -10,6 +12,7 @@ public class CartItem implements Serializable {
     private long addedTime;
 
     public CartItem() {
+        this.addedTime = System.currentTimeMillis();
     }
 
     public CartItem(Product product, int quantity) {
@@ -26,7 +29,24 @@ public class CartItem implements Serializable {
         this.addedTime = System.currentTimeMillis();
     }
 
-    // Getters and Setters
+    // ----------- Getter và Setter -----------
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getCartID() {
+        return cartID;
+    }
+
+    public void setCartID(int cartID) {
+        this.cartID = cartID;
+    }
+
     public Product getProduct() {
         return product;
     }
@@ -67,18 +87,17 @@ public class CartItem implements Serializable {
         this.addedTime = addedTime;
     }
 
-    // Tính tổng tiền từ giá * số lượng
     public double getTotalPrice() {
         if (product == null) return 0.0;
         return product.getPrice() * quantity;
     }
 
-    // Có chọn màu hoặc size không?
     public boolean hasVariants() {
         return selectedSize != null || selectedColor != null;
     }
 
-    // equals và hashCode để so sánh sản phẩm (theo id và biến thể)
+    // ----------- equals, hashCode, toString -----------
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -104,7 +123,9 @@ public class CartItem implements Serializable {
     @Override
     public String toString() {
         return "CartItem{" +
-                "product=" + (product != null ? product.getProductName() : null) +
+                "id=" + id +
+                ", cartID=" + cartID +
+                ", product=" + (product != null ? product.getProductName() : null) +
                 ", quantity=" + quantity +
                 ", selectedSize='" + selectedSize + '\'' +
                 ", selectedColor='" + selectedColor + '\'' +

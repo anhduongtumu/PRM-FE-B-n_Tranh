@@ -26,11 +26,17 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.project.R;
 import com.example.project.adapter.BannerAdapter;
 import com.example.project.adapter.ProductAdapter;
+import com.example.project.dto.CreateCartItemDto;
+import com.example.project.model.Cart;
+import com.example.project.model.CartItem;
 import com.example.project.model.Product;
 import com.example.project.network.ApiClient;
 import com.example.project.service.AuthService;
+import com.example.project.service.CartItemService;
+import com.example.project.service.CartService;
 import com.example.project.service.ProductService;
 import com.example.project.utils.TokenManager;
+import com.example.project.utils.UserManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -136,20 +142,51 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void addToCart(Product product) {
-        // Get current cart count
-        int currentCount = cartPrefs.getInt(CART_COUNT_KEY, 0);
+        int userId = new UserManager(this).getUser().getId(); // lấy từ SharedPreferences
 
-        // Increment cart count
-        int newCount = currentCount + 1;
+        CartService cartService = ApiClient.getClient(this).create(CartService.class);
+        CartItemService cartItemService = ApiClient.getClient(this).create(CartItemService.class);
 
-        // Save updated count
-        cartPrefs.edit().putInt(CART_COUNT_KEY, newCount).apply();
+        // Bước 1: Lấy Cart hiện tại theo userId
+        cartService.getCartByUserId(userId).enqueue(new Callback<Cart>() {
+            @Override
+            public void onResponse(Call<Cart> call, Response<Cart> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Cart cart = response.body();
 
-        // Update badge
-        updateCartBadge();
+                    // Bước 2: Gửi yêu cầu thêm sản phẩm vào cart item
+                    CreateCartItemDto createDto = new CreateCartItemDto();
+                    createDto.setCartID(cart.getId());
+                    createDto.setProductID(product.getId());
+                    createDto.setQuantity(1); // Mặc định 1
 
-        // Show confirmation
-        Toast.makeText(this, "Đã thêm " + product.getProductName() + " vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                    cartItemService.createCartItem(createDto).enqueue(new Callback<CartItem>() {
+                        @Override
+                        public void onResponse(Call<CartItem> call, Response<CartItem> response) {
+                            if (response.isSuccessful()) {
+                                Toast.makeText(MainActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                                updateCartBadge(); // Bạn có thể reload lại đếm nếu muốn
+                            } else {
+                                Toast.makeText(MainActivity.this, "Thêm vào giỏ thất bại", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<CartItem> call, Throwable t) {
+                            Toast.makeText(MainActivity.this, "Lỗi khi thêm sản phẩm: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                } else {
+                    Toast.makeText(MainActivity.this, "Không tìm thấy giỏ hàng", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Cart> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Lỗi kết nối giỏ hàng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateCartBadge() {

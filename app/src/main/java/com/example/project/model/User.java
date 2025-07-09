@@ -4,14 +4,14 @@ package com.example.project.model;
 import java.io.Serializable;
 
 public class User implements Serializable {
-    private String id;
+    private int id;
     private String username;
     private String email;
     private String phoneNumber;
     private String address;
     private String role;
 
-    public User(String id, String username, String email, String phoneNumber, String address, String role) {
+    public User(int id, String username, String email, String phoneNumber, String address, String role) {
         this.id = id;
         this.username = username;
         this.email = email;

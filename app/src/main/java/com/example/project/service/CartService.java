@@ -22,7 +22,7 @@ public interface CartService {
     Call<Cart> getCartById(@Path("id") int id);
 
     @GET("/api/carts/user/{userId}")
-    Call<List<Cart>> getCartsByUserId(@Path("userId") int userId);
+    Call<Cart> getCartByUserId(@Path("userId") int userId);
 
     @POST("/api/carts")
     Call<Cart> createCart(@Body CreateCartDto cart);

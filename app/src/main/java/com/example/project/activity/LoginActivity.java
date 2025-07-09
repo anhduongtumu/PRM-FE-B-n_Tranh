@@ -92,7 +92,9 @@ public class LoginActivity extends AppCompatActivity {
                     // Lưu token vào SharedPreferences
                     tokenManager.saveToken(accessToken);
                     userManager.saveUser(user);
-                    
+
+                    SharedPreferences userPrefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                    userPrefs.edit().putInt("user_id", user.getId()).apply();
 
                     SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
                     prefs.edit().putBoolean("is_logged_in", true).apply();

@@ -1,6 +1,5 @@
 package com.example.project.activity;
 
-import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.View;
@@ -13,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.project.R;
+import com.example.project.model.Product;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
@@ -33,35 +33,42 @@ public class ProductDetailActivity extends AppCompatActivity {
         textCategory = findViewById(R.id.textCategory);
         btnAddToCart = findViewById(R.id.btnAddToCart);
 
-        Intent intent = getIntent();
-        String name = intent.getStringExtra("name");
-        String price = intent.getStringExtra("price");
-        String originalPrice = intent.getStringExtra("originalPrice");
-        float rating = intent.getFloatExtra("rating", 0f);
-        String imageUrl = intent.getStringExtra("imageUrl");
-        String category = intent.getStringExtra("category");
+        Product product = (Product) getIntent().getSerializableExtra("product");
 
-        textName.setText(name != null ? name : "Không rõ");
-        textPrice.setText(price != null ? price : "—");
-        textRating.setText("Đánh giá: " + rating);
-        textCategory.setText("Danh mục: " + (category != null ? category : "Không rõ"));
+        if (product != null) {
+            textName.setText(product.getProductName());
+            textPrice.setText(String.format("%.0fđ", product.getPrice()));
+            textRating.setText("Đánh giá: " + product.getRating());
 
-        if (originalPrice != null && !originalPrice.isEmpty()) {
-            textOriginalPrice.setVisibility(View.VISIBLE);
-            textOriginalPrice.setText(originalPrice);
-            textOriginalPrice.setPaintFlags(textOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            if (product.getCategory() != null) {
+                textCategory.setText("Danh mục: " + product.getCategory().getCategoryName());
+            } else {
+                textCategory.setText("Danh mục: Không rõ");
+            }
+
+            if (product.getOriginalPrice() != null && !product.getOriginalPrice().isEmpty()) {
+                textOriginalPrice.setVisibility(View.VISIBLE);
+                textOriginalPrice.setText(product.getOriginalPrice());
+                textOriginalPrice.setPaintFlags(textOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            } else {
+                textOriginalPrice.setVisibility(View.GONE);
+            }
+
+            if (product.getImageURL() != null && !product.getImageURL().isEmpty()) {
+                Glide.with(this)
+                        .load(product.getImageURL())
+                        .placeholder(R.drawable.placeholder_image)
+                        .into(imageProduct);
+            } else {
+                imageProduct.setImageResource(R.drawable.placeholder_image);
+            }
+
+            btnAddToCart.setOnClickListener(v ->
+                    Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show()
+            );
         } else {
-            textOriginalPrice.setVisibility(View.GONE);
+            Toast.makeText(this, "Không có dữ liệu sản phẩm", Toast.LENGTH_SHORT).show();
+            finish();
         }
-
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            Glide.with(this).load(imageUrl).placeholder(R.drawable.placeholder_image).into(imageProduct);
-        } else {
-            imageProduct.setImageResource(R.drawable.placeholder_image);
-        }
-
-        btnAddToCart.setOnClickListener(v ->
-                Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show()
-        );
     }
 }
