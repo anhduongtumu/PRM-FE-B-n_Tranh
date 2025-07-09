@@ -36,7 +36,7 @@ public class FirebaseUtil {
     public static Query getAdminChats(String adminId) {
         return FirebaseFirestore.getInstance()
                 .collection("chats")
-                .whereArrayContains("participants", adminId)
+//                .whereArrayContains("participants", adminId)
                 .orderBy("lastMessageTimestamp", Query.Direction.DESCENDING);
     }
 
@@ -109,7 +109,7 @@ public class FirebaseUtil {
              .addOnFailureListener(onFailure);
     }
 
-    public static void createChatIfNotExists(String chatId, String userId1, String userId2, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
+    public static void createChatIfNotExists(String customerName, String chatId, String userId1, String userId2, OnSuccessListener<Void> onSuccess, OnFailureListener onFailure) {
         DocumentReference chatDocRef = FirebaseFirestore.getInstance()
                 .collection("chats")
                 .document(chatId);
@@ -118,6 +118,7 @@ public class FirebaseUtil {
             if (!documentSnapshot.exists()) {
                 Map<String, Object> chatData = new HashMap<>();
                 chatData.put("participants", Arrays.asList(userId1, userId2));
+                chatData.put("customerName",customerName );
                 chatData.put("lastMessage", "");
                 chatData.put("lastUpdated", System.currentTimeMillis());
 

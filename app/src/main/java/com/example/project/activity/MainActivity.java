@@ -31,6 +31,7 @@ import com.example.project.network.ApiClient;
 import com.example.project.service.AuthService;
 import com.example.project.service.ProductService;
 import com.example.project.utils.TokenManager;
+import com.example.project.utils.UserManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -69,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String CART_PREFS = "cart_prefs";
     private static final String CART_COUNT_KEY = "cart_count";
 
+    private UserManager userManager;
+
     // Banner images array
     private int[] bannerImages = {
             R.drawable.tranh1,
@@ -80,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        userManager = new UserManager(this);
 
         initViews();
         initCartPreferences(); // ADD THIS LINE
@@ -176,8 +181,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void setupChatHandler() {
         if (layoutChat != null) {
             layoutChat.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
-                startActivity(intent);
+                SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+                boolean isLoggedIn = prefs.getBoolean("is_logged_in", false);
+
+                if (!isLoggedIn) {
+                    Toast.makeText(MainActivity.this, "Vui lòng tạo tài khoản trước", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    return;
+                }
+
+                // Check if user is admin
+                if (userManager.getUser().getRole().equals("admin")) {
+                    Intent intent = new Intent(MainActivity.this, AdminChatsActivity.class);
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                    startActivity(intent);
+                }
             });
         }
     }
@@ -428,6 +449,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     // Xóa token và trạng thái đăng nhập
                     TokenManager tokenManager = new TokenManager(MainActivity.this);
                     tokenManager.clearToken();
+                    userManager.clearUser();
 
                     SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
                     prefs.edit().clear().apply();

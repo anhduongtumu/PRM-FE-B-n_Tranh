@@ -33,6 +33,7 @@
         <activity android:name=".activity.UserProfileActivity" />
         <activity android:name=".activity.CartActivity" />
         <activity android:name=".activity.ChatActivity" />
+        <activity android:name=".activity.AdminChatsActivity" />
         <activity
             android:name=".activity.MapActivity"
             android:exported="false" />
