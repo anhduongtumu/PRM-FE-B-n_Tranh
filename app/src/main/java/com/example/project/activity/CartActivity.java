@@ -3,6 +3,7 @@ package com.example.project.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -138,33 +139,68 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             @Override
             public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    cartItems.clear();
+                    List<CartItem> filteredItems = new ArrayList<>();
+
+                    Log.d("DEBUG", "userCartID=" + userCart.getId());
+                    Log.d("DEBUG", "Total cart items received: " + response.body().size());
+
                     for (CartItem item : response.body()) {
-                        if (item.getProduct() != null && userCart.getId() == item.getCartID()) {
-                            cartItems.add(item);
+                        Log.d("DEBUG", "CartItem: cartID=" + item.getCartID() + ", product=" + item.getProduct());
+                        Log.d("DEBUG", "CartID comparison: " + item.getCartID() + " == " + userCart.getId() + " = " + (item.getCartID() == userCart.getId()));
+
+                        // Thêm kiểm tra null safety và debug chi tiết
+                        if (item.getProduct() != null) {
+                            Log.d("DEBUG", "Product is not null: " + item.getProduct().getProductName());
+
+                            // Sử dụng equals() thay vì == để so sánh
+                            if (item.getCartID() == userCart.getId()) {
+                                filteredItems.add(item);
+                                Log.d("DEBUG", "Added item to filtered list: " + item.getProduct().getProductName());
+                            } else {
+                                Log.d("DEBUG", "CartID mismatch: " + item.getCartID() + " != " + userCart.getId());
+                            }
+                        } else {
+                            Log.d("DEBUG", "Product is null for cartItem ID: " + item.getId());
                         }
                     }
+
+                    Log.d("DEBUG", "Filtered items count: " + filteredItems.size());
+
+                    cartItems.clear();
+                    cartItems.addAll(filteredItems);
+
                     cartAdapter.updateCartItems(cartItems);
                     updateUI();
+                } else {
+                    Log.e("DEBUG", "Response unsuccessful or body null");
+                    showEmptyCart();
                 }
             }
 
             @Override
             public void onFailure(Call<List<CartItem>> call, Throwable t) {
+                Log.e("DEBUG", "API call failed: " + t.getMessage());
                 Toast.makeText(CartActivity.this, "Lỗi khi tải sản phẩm giỏ hàng", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void updateUI() {
+        Log.d("DEBUG", "updateUI: cartItems size = " + cartItems.size());
+
         if (cartItems.isEmpty()) {
+            Log.d("DEBUG", "Showing empty cart");
             showEmptyCart();
         } else {
+            Log.d("DEBUG", "Showing cart content");
             layoutEmptyCart.setVisibility(View.GONE);
             layoutCartContent.setVisibility(View.VISIBLE);
             tvClearCart.setVisibility(View.VISIBLE);
             calculatePrices();
             updatePriceViews();
+
+            // debug thêm
+            Log.d("DEBUG", "Cart content shown. First item: " + cartItems.get(0).getProduct().getProductName());
         }
     }
 
@@ -290,8 +326,8 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 cartItems.remove(item);
-                cartAdapter.notifyDataSetChanged();
-                updateUI();
+                cartAdapter.updateCartItems(cartItems);
+                recyclerCartItems.post(() -> updateUI()); // Delay nhẹ để đảm bảo cập nhật UI sau khi data đã vào RecyclerView
                 Toast.makeText(CartActivity.this, "Đã xóa sản phẩm khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
             }
 

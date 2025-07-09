@@ -7,7 +7,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import com.example.project.utils.CartManager;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
@@ -24,6 +24,8 @@ public class ProductDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
+        ImageView btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> onBackPressed());
 
         imageProduct = findViewById(R.id.imageProduct);
         textName = findViewById(R.id.textName);
@@ -33,6 +35,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         textCategory = findViewById(R.id.textCategory);
         btnAddToCart = findViewById(R.id.btnAddToCart);
 
+        // Nhận đối tượng Product từ Intent
         Product product = (Product) getIntent().getSerializableExtra("product");
 
         if (product != null) {
@@ -40,7 +43,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             textPrice.setText(String.format("%.0fđ", product.getPrice()));
             textRating.setText("Đánh giá: " + product.getRating());
 
-            if (product.getCategory() != null) {
+            if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
                 textCategory.setText("Danh mục: " + product.getCategory().getCategoryName());
             } else {
                 textCategory.setText("Danh mục: Không rõ");
@@ -63,9 +66,9 @@ public class ProductDetailActivity extends AppCompatActivity {
                 imageProduct.setImageResource(R.drawable.placeholder_image);
             }
 
-            btnAddToCart.setOnClickListener(v ->
-                    Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show()
-            );
+            btnAddToCart.setOnClickListener(v -> {
+                CartManager.addToCart(ProductDetailActivity.this, product, null);
+            });
         } else {
             Toast.makeText(this, "Không có dữ liệu sản phẩm", Toast.LENGTH_SHORT).show();
             finish();

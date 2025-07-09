@@ -1,11 +1,22 @@
 package com.example.project.model;
 
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 
 public class CartItem implements Serializable {
-    private int id;                 // ID của CartItem (trong DB)
-    private int cartID;            // ID của Cart mà item này thuộc về
+
+    private int id;
+
+    @SerializedName("cartID")
+    private int cartID;
+
+    @SerializedName("Product")
     private Product product;
+
+    @SerializedName("Cart")
+    private Cart cart;
+
+    private double price;
     private int quantity;
     private String selectedSize;
     private String selectedColor;
@@ -29,7 +40,7 @@ public class CartItem implements Serializable {
         this.addedTime = System.currentTimeMillis();
     }
 
-    // ----------- Getter và Setter -----------
+    // -------------------- Getter & Setter --------------------
 
     public int getId() {
         return id;
@@ -39,12 +50,21 @@ public class CartItem implements Serializable {
         this.id = id;
     }
 
+    // Ưu tiên lấy cartID từ Cart object nếu có
     public int getCartID() {
-        return cartID;
+        return (cart != null) ? cart.getId() : cartID;
     }
 
     public void setCartID(int cartID) {
         this.cartID = cartID;
+    }
+
+    public Cart getCart() {
+        return cart;
+    }
+
+    public void setCart(Cart cart) {
+        this.cart = cart;
     }
 
     public Product getProduct() {
@@ -53,6 +73,14 @@ public class CartItem implements Serializable {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 
     public int getQuantity() {
@@ -87,29 +115,28 @@ public class CartItem implements Serializable {
         this.addedTime = addedTime;
     }
 
+    // -------------------- Logic phụ trợ --------------------
+
     public double getTotalPrice() {
-        if (product == null) return 0.0;
-        return product.getPrice() * quantity;
+        return this.price * quantity;
     }
 
     public boolean hasVariants() {
         return selectedSize != null || selectedColor != null;
     }
 
-    // ----------- equals, hashCode, toString -----------
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (!(obj instanceof CartItem)) return false;
 
-        CartItem cartItem = (CartItem) obj;
+        CartItem other = (CartItem) obj;
 
-        if (product != null ? product.getId() != cartItem.product.getId() : cartItem.product != null)
+        if (product != null ? product.getId() != other.product.getId() : other.product != null)
             return false;
-        if (selectedSize != null ? !selectedSize.equals(cartItem.selectedSize) : cartItem.selectedSize != null)
+        if (selectedSize != null ? !selectedSize.equals(other.selectedSize) : other.selectedSize != null)
             return false;
-        return selectedColor != null ? selectedColor.equals(cartItem.selectedColor) : cartItem.selectedColor == null;
+        return selectedColor != null ? selectedColor.equals(other.selectedColor) : other.selectedColor == null;
     }
 
     @Override
@@ -124,7 +151,7 @@ public class CartItem implements Serializable {
     public String toString() {
         return "CartItem{" +
                 "id=" + id +
-                ", cartID=" + cartID +
+                ", cartID=" + getCartID() +
                 ", product=" + (product != null ? product.getProductName() : null) +
                 ", quantity=" + quantity +
                 ", selectedSize='" + selectedSize + '\'' +

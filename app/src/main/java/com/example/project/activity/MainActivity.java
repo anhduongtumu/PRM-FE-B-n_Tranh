@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +27,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.project.R;
 import com.example.project.adapter.BannerAdapter;
 import com.example.project.adapter.ProductAdapter;
+import com.example.project.dto.CreateCartDto;
 import com.example.project.dto.CreateCartItemDto;
 import com.example.project.model.Cart;
 import com.example.project.model.CartItem;
@@ -35,10 +37,12 @@ import com.example.project.service.AuthService;
 import com.example.project.service.CartItemService;
 import com.example.project.service.CartService;
 import com.example.project.service.ProductService;
+import com.example.project.utils.CartManager;
 import com.example.project.utils.TokenManager;
 import com.example.project.utils.UserManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,54 +145,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         updateCartBadge();
     }
 
-    private void addToCart(Product product) {
-        int userId = new UserManager(this).getUser().getId(); // lấy từ SharedPreferences
-
-        CartService cartService = ApiClient.getClient(this).create(CartService.class);
-        CartItemService cartItemService = ApiClient.getClient(this).create(CartItemService.class);
-
-        // Bước 1: Lấy Cart hiện tại theo userId
-        cartService.getCartByUserId(userId).enqueue(new Callback<Cart>() {
-            @Override
-            public void onResponse(Call<Cart> call, Response<Cart> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    Cart cart = response.body();
-
-                    // Bước 2: Gửi yêu cầu thêm sản phẩm vào cart item
-                    CreateCartItemDto createDto = new CreateCartItemDto();
-                    createDto.setCartID(cart.getId());
-                    createDto.setProductID(product.getId());
-                    createDto.setQuantity(1); // Mặc định 1
-
-                    cartItemService.createCartItem(createDto).enqueue(new Callback<CartItem>() {
-                        @Override
-                        public void onResponse(Call<CartItem> call, Response<CartItem> response) {
-                            if (response.isSuccessful()) {
-                                Toast.makeText(MainActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
-                                updateCartBadge(); // Bạn có thể reload lại đếm nếu muốn
-                            } else {
-                                Toast.makeText(MainActivity.this, "Thêm vào giỏ thất bại", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<CartItem> call, Throwable t) {
-                            Toast.makeText(MainActivity.this, "Lỗi khi thêm sản phẩm: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-                } else {
-                    Toast.makeText(MainActivity.this, "Không tìm thấy giỏ hàng", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Cart> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Lỗi kết nối giỏ hàng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     private void updateCartBadge() {
         int cartCount = cartPrefs.getInt(CART_COUNT_KEY, 0);
 
@@ -198,16 +154,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             tvCartBadge.setVisibility(View.GONE);
         }
-    }
-
-    public void updateCartCount(int count) {
-        cartPrefs.edit().putInt(CART_COUNT_KEY, count).apply();
-        updateCartBadge();
-    }
-
-    public void clearCartBadge() {
-        cartPrefs.edit().putInt(CART_COUNT_KEY, 0).apply();
-        updateCartBadge();
     }
 
     private void setupChatHandler() {
@@ -365,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         sliderHandler.postDelayed(sliderRunnable, 3000);
         // Refresh cart count when returning to activity
-        updateCartBadge();
+        CartManager.updateCartBadge(this, tvCartBadge); // Cập nhật cart khi quay lại
     }
 
     @Override
@@ -401,22 +347,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         @Override
                         public void onProductClick(Product product) {
                             Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
-                            intent.putExtra("name", product.getProductName());
-                            intent.putExtra("price", product.getPrice());
-                            intent.putExtra("originalPrice", product.getOriginalPrice());
-                            intent.putExtra("rating", product.getRating());
-                            String categoryName = "Không rõ";
-                            if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
-                                categoryName = product.getCategory().getCategoryName();
-                            }
-                            intent.putExtra("category", categoryName);
-                            intent.putExtra("imageRes", product.getImageURL()); // Nếu imageURL là String từ API
+                            intent.putExtra("product", product);
                             startActivity(intent);
                         }
 
                         @Override
                         public void onAddToCartClick(Product product) {
-                            addToCart(product);
+                            CartManager.addToCart(MainActivity.this, product, () -> {
+                                CartManager.updateCartBadge(MainActivity.this, tvCartBadge);
+                            });
                         }
                     });
 

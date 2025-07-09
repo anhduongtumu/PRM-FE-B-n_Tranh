@@ -2,9 +2,12 @@ package com.example.project.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -13,6 +16,7 @@ import com.example.project.adapter.ProductAdapter;
 import com.example.project.model.Product;
 import com.example.project.network.ApiClient;
 import com.example.project.service.ProductService;
+import com.example.project.utils.CartManager;
 
 import java.util.List;
 
@@ -28,6 +32,14 @@ public class ProductListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_list);
+
+        // Thiết lập Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Xử lý nút quay lại
+        ImageView btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> onBackPressed());
 
         rvProductList = findViewById(R.id.rvProductList);
         rvProductList.setLayoutManager(new LinearLayoutManager(this));
@@ -50,16 +62,17 @@ public class ProductListActivity extends AppCompatActivity {
                         @Override
                         public void onProductClick(Product product) {
                             Intent intent = new Intent(ProductListActivity.this, ProductDetailActivity.class);
-                            intent.putExtra("product", product); // Serializable
+                            intent.putExtra("product", product);
                             startActivity(intent);
                         }
 
                         @Override
                         public void onAddToCartClick(Product product) {
-                            Toast.makeText(ProductListActivity.this, "Chức năng đang phát triển", Toast.LENGTH_SHORT).show();
+                            CartManager.addToCart(ProductListActivity.this, product, () ->
+                                    Toast.makeText(ProductListActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show()
+                            );
                         }
                     });
-
                 } else {
                     Toast.makeText(ProductListActivity.this, "Không thể tải sản phẩm", Toast.LENGTH_SHORT).show();
                 }
