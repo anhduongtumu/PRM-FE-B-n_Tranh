@@ -7,14 +7,13 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.project.dto.cart.CreateCartDto;
-import com.example.project.dto.cartItem.CreateCartItemDto;
 import com.example.project.model.Cart;
 import com.example.project.model.CartItem;
 import com.example.project.model.Product;
 import com.example.project.network.ApiClient;
 import com.example.project.service.CartItemService;
 import com.example.project.service.CartService;
+import com.google.gson.JsonObject;
 
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class CartManager {
 
     public static void addToCart(Context context, Product product, Runnable onSuccess) {
         int userId = new UserManager(context).getUser().getId();
-        Log.d("CartManager", "userId = " + userId); // Thêm dòng này
+        Log.d("CartManager", "userId = " + userId);
 
         if (userId <= 0) {
             Toast.makeText(context, "Không tìm thấy người dùng hợp lệ", Toast.LENGTH_SHORT).show();
@@ -38,57 +37,16 @@ public class CartManager {
 
         CartService cartService = ApiClient.getClient(context).create(CartService.class);
 
-        cartService.getCartByUserId(userId).enqueue(new Callback<Cart>() {
+        JsonObject body = new JsonObject();
+        body.addProperty("productId", product.getId());
+        body.addProperty("quantity", 1); // mặc định thêm 1 sản phẩm
+
+        cartService.addProductToCart(userId, body).enqueue(new Callback<Cart>() {
             @Override
             public void onResponse(Call<Cart> call, Response<Cart> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    int cartId = response.body().getId();
-                    addCartItem(context, cartId, product, onSuccess);
-                } else {
-                    // Nếu chưa có thì tạo giỏ hàng mới
-                    CreateCartDto createCartDto = new CreateCartDto();
-                    createCartDto.setUserID(userId);
-
-                    cartService.createCart(createCartDto).enqueue(new Callback<Cart>() {
-                        @Override
-                        public void onResponse(Call<Cart> call, Response<Cart> response) {
-                            if (response.isSuccessful() && response.body() != null) {
-                                int newCartId = response.body().getId();
-                                addCartItem(context, newCartId, product, onSuccess);
-                            } else {
-                                Toast.makeText(context, "Không thể tạo giỏ hàng", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<Cart> call, Throwable t) {
-                            Toast.makeText(context, "Lỗi tạo giỏ hàng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Cart> call, Throwable t) {
-                Toast.makeText(context, "Lỗi lấy giỏ hàng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private static void addCartItem(Context context, int cartId, Product product, Runnable onSuccess) {
-        CreateCartItemDto dto = new CreateCartItemDto();
-        dto.setCartID(cartId);
-        dto.setProductID(product.getId());
-        dto.setQuantity(1);
-        dto.setPrice(product.getPrice());
-
-        CartItemService cartItemService = ApiClient.getClient(context).create(CartItemService.class);
-        cartItemService.createCartItem(dto).enqueue(new Callback<CartItem>() {
-            @Override
-            public void onResponse(Call<CartItem> call, Response<CartItem> response) {
-                if (response.isSuccessful()) {
                     Toast.makeText(context, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
-                    updateCartCount(context, cartId);
+                    updateCartCount(context, response.body().getId());
                     if (onSuccess != null) onSuccess.run();
                 } else {
                     Toast.makeText(context, "Không thể thêm sản phẩm", Toast.LENGTH_SHORT).show();
@@ -96,7 +54,7 @@ public class CartManager {
             }
 
             @Override
-            public void onFailure(Call<CartItem> call, Throwable t) {
+            public void onFailure(Call<Cart> call, Throwable t) {
                 Toast.makeText(context, "Lỗi khi thêm sản phẩm: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -143,5 +101,4 @@ public class CartManager {
         prefs.edit().putInt(CART_COUNT_KEY, 0).apply();
         badgeView.setVisibility(View.GONE);
     }
-
 }

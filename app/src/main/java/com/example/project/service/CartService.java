@@ -1,8 +1,6 @@
 package com.example.project.service;
 
 import com.example.project.model.Cart;
-import com.example.project.dto.cart.CreateCartDto;
-import com.example.project.dto.cart.UpdateCartDto;
 import com.google.gson.JsonObject;
 
 import java.util.List;
@@ -16,6 +14,7 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface CartService {
+
     @GET("/api/carts")
     Call<List<Cart>> getAllCarts();
 
@@ -25,14 +24,19 @@ public interface CartService {
     @GET("/api/carts/user/{userId}")
     Call<Cart> getCartByUserId(@Path("userId") int userId);
 
-    @POST("api/carts/add-cart/{userId}")
-    Call<Cart> addProductToCart(@Path("userId") int userId, @Body JsonObject body);
+    // Thêm sản phẩm vào giỏ hàng (Tạo giỏ hàng nếu chưa có)
+    @POST("/api/carts/add-cart/{userId}")
+    Call<Cart> addProductToCart(
+            @Path("userId") int userId,
+            @Body JsonObject body
+    );
 
-    @POST("/api/carts")
-    Call<Cart> createCart(@Body CreateCartDto cart);
-
-    @PUT("/api/carts/{id}")
-    Call<Cart> updateCart(@Path("id") int id, @Body UpdateCartDto cart);
+    // Cập nhật số lượng sản phẩm trong giỏ hàng
+    @PUT("/api/carts/update-cart/{userId}")
+    Call<Cart> updateCartItem(
+            @Path("userId") int userId,
+            @Body JsonObject body
+    );
 
     @DELETE("/api/carts/{id}")
     Call<Void> deleteCart(@Path("id") int id);
