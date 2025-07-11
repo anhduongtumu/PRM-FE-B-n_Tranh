@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,12 +18,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.R;
 import com.example.project.adapter.ProductGridAdapter;
 import com.example.project.model.Product;
+import com.example.project.service.ProductService;
+import com.example.project.network.ApiClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class SearchActivity extends AppCompatActivity {
+
+    private static final String TAG = "SearchActivity";
 
     private EditText editTextSearch;
     private ImageView btnBack, btnClearSearch;
@@ -32,12 +42,21 @@ public class SearchActivity extends AppCompatActivity {
 
     // Filter buttons
     private MaterialButton btnFilterAll, btnFilterAbstract, btnFilterLandscape,
-            btnFilterModern, btnFilterMinimal;
+            btnFilterPortrait;
     private String currentFilter = "Tất cả";
+    private Integer currentCategoryId = null;
 
     private ProductGridAdapter searchAdapter;
     private List<Product> allProducts;
     private List<Product> filteredProducts;
+
+    // API service
+    private ProductService productService;
+
+    // Category mapping
+    private static final int CATEGORY_ABSTRACT = 3;
+    private static final int CATEGORY_LANDSCAPE = 1;
+    private static final int CATEGORY_PORTRAIT = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +64,12 @@ public class SearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search);
 
         initViews();
+        initApiService();
         setupSearchFunctionality();
         setupFilterButtons();
         setupBottomNavigation();
-        loadAllProducts();
         setupRecyclerView();
+        loadAllProducts();
     }
 
     private void initViews() {
@@ -66,8 +86,11 @@ public class SearchActivity extends AppCompatActivity {
         btnFilterAll = findViewById(R.id.btnFilterAll);
         btnFilterAbstract = findViewById(R.id.btnFilterAbstract);
         btnFilterLandscape = findViewById(R.id.btnFilterLandscape);
-        btnFilterModern = findViewById(R.id.btnFilterModern);
-        btnFilterMinimal = findViewById(R.id.btnFilterMinimal);
+        btnFilterPortrait = findViewById(R.id.btnFilterPortrait);
+    }
+
+    private void initApiService() {
+        productService = ApiClient.getClient(this).create(ProductService.class);
     }
 
     private void setupSearchFunctionality() {
@@ -86,7 +109,7 @@ public class SearchActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 0) {
                     btnClearSearch.setVisibility(View.VISIBLE);
-                    performSearch(s.toString());
+                    performApiSearch(s.toString());
                 } else {
                     btnClearSearch.setVisibility(View.GONE);
                     showEmptyState();
@@ -99,11 +122,10 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void setupFilterButtons() {
-        btnFilterAll.setOnClickListener(v -> applyFilter("Tất cả"));
-        btnFilterAbstract.setOnClickListener(v -> applyFilter("Trừu tượng"));
-        btnFilterLandscape.setOnClickListener(v -> applyFilter("Phong cảnh"));
-        btnFilterModern.setOnClickListener(v -> applyFilter("Hiện đại"));
-        btnFilterMinimal.setOnClickListener(v -> applyFilter("Tối giản"));
+        btnFilterAll.setOnClickListener(v -> applyFilter("Tất cả", null));
+        btnFilterAbstract.setOnClickListener(v -> applyFilter("Trừu tượng", CATEGORY_ABSTRACT));
+        btnFilterLandscape.setOnClickListener(v -> applyFilter("Phong cảnh", CATEGORY_LANDSCAPE));
+        btnFilterPortrait.setOnClickListener(v -> applyFilter("Chân dung", CATEGORY_PORTRAIT));
     }
 
     private void setupBottomNavigation() {
@@ -128,8 +150,31 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void loadAllProducts() {
-        allProducts = createAllProducts();
-        filteredProducts = new ArrayList<>(allProducts);
+        showLoadingState();
+
+        Call<List<Product>> call = productService.getAllProducts();
+        call.enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                hideLoadingState();
+
+                if (response.isSuccessful() && response.body() != null) {
+                    allProducts = response.body();
+                    filteredProducts = new ArrayList<>(allProducts);
+                    Log.d(TAG, "Loaded " + allProducts.size() + " products");
+                } else {
+                    Log.e(TAG, "Failed to load products: " + response.message());
+                    showErrorState("Không thể tải danh sách sản phẩm");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                hideLoadingState();
+                Log.e(TAG, "Network error: " + t.getMessage());
+                showErrorState("Lỗi kết nối mạng");
+            }
+        });
     }
 
     private void setupRecyclerView() {
@@ -139,42 +184,78 @@ public class SearchActivity extends AppCompatActivity {
         recyclerSearchResults.setAdapter(searchAdapter);
     }
 
-    private void performSearch(String query) {
-        List<Product> searchResults = new ArrayList<>();
-        String lowercaseQuery = query.toLowerCase().trim();
+    private void performApiSearch(String query) {
+        showLoadingState();
 
-        for (Product product : filteredProducts) {
-            if (product.getProductName().toLowerCase().contains(lowercaseQuery) ||
-                    product.getCategory().getCategoryName().toLowerCase().contains(lowercaseQuery)) {
-                searchResults.add(product);
-            }
-        }
+        Call<List<Product>> call = productService.getAllProducts(query, currentCategoryId, "name_asc");
+        call.enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                hideLoadingState();
 
-        updateSearchResults(searchResults);
-    }
-
-    private void applyFilter(String category) {
-        currentFilter = category;
-        updateFilterButtons();
-
-        if (category.equals("Tất cả")) {
-            filteredProducts = new ArrayList<>(allProducts);
-        } else {
-            filteredProducts = new ArrayList<>();
-            for (Product product : allProducts) {
-                if (product.getCategory().equals(category)) {
-                    filteredProducts.add(product);
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Product> searchResults = response.body();
+                    updateSearchResults(searchResults);
+                    Log.d(TAG, "Search results: " + searchResults.size() + " products found");
+                } else {
+                    Log.e(TAG, "Search failed: " + response.message());
+                    showErrorState("Không thể tìm kiếm sản phẩm");
                 }
             }
-        }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                hideLoadingState();
+                Log.e(TAG, "Search network error: " + t.getMessage());
+                showErrorState("Lỗi kết nối mạng");
+            }
+        });
+    }
+
+    private void applyFilter(String category, Integer categoryId) {
+        currentFilter = category;
+        currentCategoryId = categoryId;
+        updateFilterButtons();
 
         // Re-perform search with current query if there is one
         String currentQuery = editTextSearch.getText().toString().trim();
         if (!currentQuery.isEmpty()) {
-            performSearch(currentQuery);
+            performApiSearch(currentQuery);
         } else {
-            showEmptyState();
+            // If no search query, load products with filter
+            loadProductsWithFilter(categoryId);
         }
+    }
+
+    private void loadProductsWithFilter(Integer categoryId) {
+        showLoadingState();
+
+        Call<List<Product>> call = productService.getAllProducts(null, categoryId, "name_asc");
+        call.enqueue(new Callback<List<Product>>() {
+            @Override
+            public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
+                hideLoadingState();
+
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Product> products = response.body();
+                    if (products.isEmpty()) {
+                        showNoResults();
+                    } else {
+                        showResults(products);
+                    }
+                } else {
+                    Log.e(TAG, "Filter failed: " + response.message());
+                    showErrorState("Không thể lọc sản phẩm");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Product>> call, Throwable t) {
+                hideLoadingState();
+                Log.e(TAG, "Filter network error: " + t.getMessage());
+                showErrorState("Lỗi kết nối mạng");
+            }
+        });
     }
 
     private void updateFilterButtons() {
@@ -182,8 +263,7 @@ public class SearchActivity extends AppCompatActivity {
         resetFilterButton(btnFilterAll);
         resetFilterButton(btnFilterAbstract);
         resetFilterButton(btnFilterLandscape);
-        resetFilterButton(btnFilterModern);
-        resetFilterButton(btnFilterMinimal);
+        resetFilterButton(btnFilterPortrait);
 
         // Highlight selected button
         MaterialButton selectedButton = getFilterButton(currentFilter);
@@ -203,8 +283,7 @@ public class SearchActivity extends AppCompatActivity {
             case "Tất cả": return btnFilterAll;
             case "Trừu tượng": return btnFilterAbstract;
             case "Phong cảnh": return btnFilterLandscape;
-            case "Hiện đại": return btnFilterModern;
-            case "Tối giản": return btnFilterMinimal;
+            case "Chân dung": return btnFilterPortrait;
             default: return null;
         }
     }
@@ -243,31 +322,21 @@ public class SearchActivity extends AppCompatActivity {
         searchAdapter.updateProducts(results);
     }
 
-    private List<Product> createAllProducts() {
-        List<Product> products = new ArrayList<>();
+    private void showLoadingState() {
+        // You can add a loading indicator here
+        // For now, we'll just hide other views
+        layoutEmptyState.setVisibility(View.GONE);
+        layoutNoResults.setVisibility(View.GONE);
+        recyclerSearchResults.setVisibility(View.GONE);
+        tvSearchResults.setVisibility(View.GONE);
+    }
 
-        // Trừu tượng
-        products.add(new Product(
-                1,
-                "Tranh Trừu Tượng Nghệ Thuật",
-                "599000",
-                "799000",
-                "https://example.com/tranh1.jpg",
-                4,
-                "Trừu tượng",
-                "true"
-        ));
+    private void hideLoadingState() {
+        // Hide loading indicator if you have one
+    }
 
-        products.add(new Product(
-                2,
-                "Phong Cảnh Thiên Nhiên",
-                "450000",
-                "0",
-                "https://example.com/tranh2.jpg",
-                4,
-                "Phong cảnh",
-                "false"
-        ));
-        return products;
+    private void showErrorState(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        showEmptyState();
     }
 }

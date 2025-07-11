@@ -13,10 +13,18 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ProductService {
     @GET("/api/products")
     Call<List<Product>> getAllProducts();
+
+    @GET("/api/products")
+    Call<List<Product>> getAllProducts(
+            @Query("search") String search,
+            @Query("categoryId") Integer categoryId,
+            @Query("sort") String sort
+    );
 
     @GET("/api/products/{id}")
     Call<Product> getProductById(@Path("id") int id);

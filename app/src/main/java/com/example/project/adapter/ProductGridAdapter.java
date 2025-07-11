@@ -51,46 +51,69 @@ public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.
         return products.size();
     }
 
-    class ProductViewHolder extends RecyclerView.ViewHolder {
+    static class ProductViewHolder extends RecyclerView.ViewHolder {
         ImageView imageProduct, imageSale;
         TextView textName, textPrice, textOriginalPrice, textRating, textCategory;
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageProduct = itemView.findViewById(R.id.ivProductImage);
+            imageProduct = itemView.findViewById(R.id.imageProduct);
             imageSale = itemView.findViewById(R.id.imageSale);
-            textName = itemView.findViewById(R.id.tvProductName);
-            textPrice = itemView.findViewById(R.id.tvProductPrice);
-            textOriginalPrice = itemView.findViewById(R.id.tvOriginalPrice);
-            textRating = itemView.findViewById(R.id.tvRating);
-            textCategory = itemView.findViewById(R.id.tvCategory);
+            textName = itemView.findViewById(R.id.textName);
+            textPrice = itemView.findViewById(R.id.textPrice);
+            textOriginalPrice = itemView.findViewById(R.id.textOriginalPrice);
+            textRating = itemView.findViewById(R.id.textRating);
+            textCategory = itemView.findViewById(R.id.textCategory);
         }
 
         public void bind(Product product) {
-            Glide.with(itemView.getContext())
-                    .load(product.getImageURL())
-                    .placeholder(R.drawable.placeholder_image)
-                    .into(imageProduct);
-
-            textName.setText(product.getProductName());
-            textPrice.setText(product.getPrice() + "đ");
-            textRating.setText("★ " + product.getRating());
-
-            // Lấy tên danh mục an toàn
-            String categoryName = "Không rõ";
-            if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
-                categoryName = product.getCategory().getCategoryName();
+            // Set text fields first
+            if (textName != null) {
+                textName.setText(product.getProductName());
             }
-            textCategory.setText(categoryName);
 
+            if (textPrice != null) {
+                textPrice.setText(product.getPrice() + "đ");
+            }
+
+            if (textRating != null) {
+                textRating.setText("★ " + product.getRating());
+            }
+
+            // Set category safely
+            if (textCategory != null) {
+                String categoryName = "Không rõ";
+                if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
+                    categoryName = product.getCategory().getCategoryName();
+                }
+                textCategory.setText(categoryName);
+            }
+
+            // Handle sale price and original price
             if (product.isOnSale() && product.getOriginalPrice() != null && !product.getOriginalPrice().isEmpty()) {
-                imageSale.setVisibility(View.VISIBLE);
-                textOriginalPrice.setVisibility(View.VISIBLE);
-                textOriginalPrice.setText(product.getOriginalPrice() + "đ");
-                textOriginalPrice.setPaintFlags(textOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                if (imageSale != null) {
+                    imageSale.setVisibility(View.VISIBLE);
+                }
+                if (textOriginalPrice != null) {
+                    textOriginalPrice.setVisibility(View.VISIBLE);
+                    textOriginalPrice.setText(product.getOriginalPrice() + "đ");
+                    textOriginalPrice.setPaintFlags(textOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                }
             } else {
-                imageSale.setVisibility(View.GONE);
-                textOriginalPrice.setVisibility(View.GONE);
+                if (imageSale != null) {
+                    imageSale.setVisibility(View.GONE);
+                }
+                if (textOriginalPrice != null) {
+                    textOriginalPrice.setVisibility(View.GONE);
+                }
+            }
+
+            // Load image with null check
+            if (imageProduct != null) {
+                Glide.with(itemView.getContext())
+                        .load(product.getImageURL())
+                        .placeholder(R.drawable.placeholder_image)
+                        .into(imageProduct);
             }
 
             // Click để mở ProductDetailActivity
@@ -100,8 +123,15 @@ public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.
                 intent.putExtra("price", product.getPrice() + "đ");
                 intent.putExtra("originalPrice", product.getOriginalPrice());
                 intent.putExtra("rating", product.getRating());
-                intent.putExtra("imageUrl", product.getImageURL()); // dùng URL thay vì res
-                intent.putExtra("category", product.getCategory().getCategoryName());
+                intent.putExtra("imageUrl", product.getImageURL());
+
+                // Safe category handling
+                String categoryName = "Không rõ";
+                if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
+                    categoryName = product.getCategory().getCategoryName();
+                }
+                intent.putExtra("category", categoryName);
+
                 itemView.getContext().startActivity(intent);
             });
         }
