@@ -1,8 +1,8 @@
 package com.example.project.service;
 
 import com.example.project.model.Category;
-import com.example.project.dto.CreateCategoryDto;
-import com.example.project.dto.UpdateCategoryDto;
+import com.example.project.dto.category.CreateCategoryDto;
+import com.example.project.dto.category.UpdateCategoryDto;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package com.example.project.service;
 
 import com.example.project.model.CartItem;
-import com.example.project.dto.CreateCartItemDto;
-import com.example.project.dto.UpdateCartItemDto;
+import com.example.project.dto.cartItem.CreateCartItemDto;
+import com.example.project.dto.cartItem.UpdateCartItemDto;
 
 import java.util.List;
 

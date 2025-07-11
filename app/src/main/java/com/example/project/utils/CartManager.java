@@ -7,8 +7,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.project.dto.CreateCartDto;
-import com.example.project.dto.CreateCartItemDto;
+import com.example.project.dto.cart.CreateCartDto;
+import com.example.project.dto.cartItem.CreateCartItemDto;
 import com.example.project.model.Cart;
 import com.example.project.model.CartItem;
 import com.example.project.model.Product;

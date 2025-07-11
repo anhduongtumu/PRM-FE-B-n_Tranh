@@ -1,8 +1,8 @@
 package com.example.project.service;
 
 import com.example.project.model.Cart;
-import com.example.project.dto.CreateCartDto;
-import com.example.project.dto.UpdateCartDto;
+import com.example.project.dto.cart.CreateCartDto;
+import com.example.project.dto.cart.UpdateCartDto;
 import com.google.gson.JsonObject;
 
 import java.util.List;

@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.R;
 import com.example.project.adapter.CartAdapter;
 import com.example.project.network.ApiClient;
-import com.example.project.dto.UpdateCartItemDto;
+import com.example.project.dto.cartItem.UpdateCartItemDto;
 import com.example.project.model.Cart;
 import com.example.project.model.CartItem;
 import com.example.project.service.CartItemService;

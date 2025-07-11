@@ -1,7 +1,7 @@
 package com.example.project.service;
 
 import com.example.project.model.StoreLocation;
-import com.example.project.dto.CreateStoreLocationDto;
+import com.example.project.dto.storeLocation.CreateStoreLocationDto;
 
 import java.util.List;
 

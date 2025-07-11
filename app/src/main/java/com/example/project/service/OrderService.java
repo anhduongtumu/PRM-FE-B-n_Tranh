@@ -1,8 +1,8 @@
 package com.example.project.service;
 
 import com.example.project.model.Order;
-import com.example.project.dto.CreateOrderDto;
-import com.example.project.dto.UpdateOrderDto;
+import com.example.project.dto.order.CreateOrderDto;
+import com.example.project.dto.order.UpdateOrderDto;
 
 import java.util.List;
 

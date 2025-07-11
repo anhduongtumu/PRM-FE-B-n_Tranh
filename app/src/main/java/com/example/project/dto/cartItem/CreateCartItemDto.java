@@ -1,4 +1,4 @@
-package com.example.project.dto;
+package com.example.project.dto.cartItem;
 
 public class CreateCartItemDto {
     private int cartID;
