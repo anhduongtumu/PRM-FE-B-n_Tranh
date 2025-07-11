@@ -179,6 +179,15 @@ public class SearchActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         searchAdapter = new ProductGridAdapter(new ArrayList<>());
+
+        // Set up click listener for product items
+        searchAdapter.setOnItemClickListener(product -> {
+            // Navigate to ProductDetailActivity
+            Intent intent = new Intent(SearchActivity.this, ProductDetailActivity.class);
+            intent.putExtra("product", product);
+            startActivity(intent);
+        });
+
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         recyclerSearchResults.setLayoutManager(layoutManager);
         recyclerSearchResults.setAdapter(searchAdapter);

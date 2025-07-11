@@ -22,6 +22,12 @@ import java.util.List;
 public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.ProductViewHolder> {
 
     private List<Product> products = new ArrayList<>();
+    private OnItemClickListener listener;
+
+    // Interface for click listener
+    public interface OnItemClickListener {
+        void onItemClick(Product product);
+    }
 
     public ProductGridAdapter(List<Product> products) {
         this.products = products;
@@ -30,6 +36,10 @@ public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.
     public void updateProducts(List<Product> newProducts) {
         this.products = newProducts;
         notifyDataSetChanged();
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -43,7 +53,7 @@ public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.
     @Override
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = products.get(position);
-        holder.bind(product);
+        holder.bind(product, listener);
     }
 
     @Override
@@ -66,7 +76,7 @@ public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.
             textCategory = itemView.findViewById(R.id.textCategory);
         }
 
-        public void bind(Product product) {
+        public void bind(Product product, OnItemClickListener listener) {
             // Set text fields first
             if (textName != null) {
                 textName.setText(product.getProductName());
@@ -116,23 +126,17 @@ public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.
                         .into(imageProduct);
             }
 
-            // Click để mở ProductDetailActivity
+            // Set click listener
             itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(itemView.getContext(), ProductDetailActivity.class);
-                intent.putExtra("name", product.getProductName());
-                intent.putExtra("price", product.getPrice() + "đ");
-                intent.putExtra("originalPrice", product.getOriginalPrice());
-                intent.putExtra("rating", product.getRating());
-                intent.putExtra("imageUrl", product.getImageURL());
-
-                // Safe category handling
-                String categoryName = "Không rõ";
-                if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
-                    categoryName = product.getCategory().getCategoryName();
+                if (listener != null) {
+                    // Use the listener if it's set (from SearchActivity)
+                    listener.onItemClick(product);
+                } else {
+                    // Fallback to direct navigation (for other activities)
+                    Intent intent = new Intent(itemView.getContext(), ProductDetailActivity.class);
+                    intent.putExtra("product", product);
+                    itemView.getContext().startActivity(intent);
                 }
-                intent.putExtra("category", categoryName);
-
-                itemView.getContext().startActivity(intent);
             });
         }
     }

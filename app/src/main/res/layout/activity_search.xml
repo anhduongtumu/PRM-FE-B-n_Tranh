@@ -186,34 +186,34 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnFilterModern"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:text="Hiện đại"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                app:strokeColor="@color/text_secondary"
-                app:cornerRadius="18dp"
-                android:minWidth="0dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp" />
+<!--            <com.google.android.material.button.MaterialButton-->
+<!--                android:id="@+id/btnFilterModern"-->
+<!--                style="@style/Widget.Material3.Button.OutlinedButton"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="48dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:text="Hiện đại"-->
+<!--                android:textSize="12sp"-->
+<!--                android:textColor="@color/text_secondary"-->
+<!--                app:strokeColor="@color/text_secondary"-->
+<!--                app:cornerRadius="18dp"-->
+<!--                android:minWidth="0dp"-->
+<!--                android:paddingStart="16dp"-->
+<!--                android:paddingEnd="16dp" />-->
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnFilterMinimal"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:text="Tối giản"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                app:strokeColor="@color/text_secondary"
-                app:cornerRadius="18dp"
-                android:minWidth="0dp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp" />
+<!--            <com.google.android.material.button.MaterialButton-->
+<!--                android:id="@+id/btnFilterMinimal"-->
+<!--                style="@style/Widget.Material3.Button.OutlinedButton"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="48dp"-->
+<!--                android:text="Tối giản"-->
+<!--                android:textSize="12sp"-->
+<!--                android:textColor="@color/text_secondary"-->
+<!--                app:strokeColor="@color/text_secondary"-->
+<!--                app:cornerRadius="18dp"-->
+<!--                android:minWidth="0dp"-->
+<!--                android:paddingStart="16dp"-->
+<!--                android:paddingEnd="16dp" />-->
 
         </LinearLayout>
     </HorizontalScrollView>

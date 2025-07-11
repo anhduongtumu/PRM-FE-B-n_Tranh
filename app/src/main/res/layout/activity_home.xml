@@ -211,7 +211,18 @@
                             android:orientation="horizontal">
 
                             <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnAbstract"
+                                android:id="@+id/btnFilterAll"
+                                style="@style/Widget.Material3.Button.OutlinedButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="12dp"
+                                android:text="Tất cả"
+                                android:textColor="@color/primary_color"
+                                app:strokeColor="@color/primary_color"
+                                app:cornerRadius="20dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnFilterAbstract"
                                 style="@style/Widget.Material3.Button.OutlinedButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -222,7 +233,7 @@
                                 app:cornerRadius="20dp" />
 
                             <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnLandscape"
+                                android:id="@+id/btnFilterLandscape"
                                 style="@style/Widget.Material3.Button.OutlinedButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -233,25 +244,36 @@
                                 app:cornerRadius="20dp" />
 
                             <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnModern"
+                                android:id="@+id/btnFilterPortrait"
                                 style="@style/Widget.Material3.Button.OutlinedButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="12dp"
-                                android:text="Hiện đại"
+                                android:text="Chân dung"
                                 android:textColor="@color/primary_color"
                                 app:strokeColor="@color/primary_color"
                                 app:cornerRadius="20dp" />
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnMinimal"
-                                style="@style/Widget.Material3.Button.OutlinedButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Tối giản"
-                                android:textColor="@color/primary_color"
-                                app:strokeColor="@color/primary_color"
-                                app:cornerRadius="20dp" />
+<!--                            <com.google.android.material.button.MaterialButton-->
+<!--                                android:id="@+id/btnModern"-->
+<!--                                style="@style/Widget.Material3.Button.OutlinedButton"-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:layout_marginEnd="12dp"-->
+<!--                                android:text="Hiện đại"-->
+<!--                                android:textColor="@color/primary_color"-->
+<!--                                app:strokeColor="@color/primary_color"-->
+<!--                                app:cornerRadius="20dp" />-->
+
+<!--                            <com.google.android.material.button.MaterialButton-->
+<!--                                android:id="@+id/btnMinimal"-->
+<!--                                style="@style/Widget.Material3.Button.OutlinedButton"-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="wrap_content"-->
+<!--                                android:text="Tối giản"-->
+<!--                                android:textColor="@color/primary_color"-->
+<!--                                app:strokeColor="@color/primary_color"-->
+<!--                                app:cornerRadius="20dp" />-->
 
                         </LinearLayout>
                     </HorizontalScrollView>
