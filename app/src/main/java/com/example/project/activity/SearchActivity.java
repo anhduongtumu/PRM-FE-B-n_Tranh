@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,7 +35,7 @@ public class SearchActivity extends AppCompatActivity {
     private static final String TAG = "SearchActivity";
 
     private EditText editTextSearch;
-    private ImageView btnBack, btnClearSearch;
+    private ImageView btnBack, btnClearSearch, btnSort;
     private RecyclerView recyclerSearchResults;
     private TextView tvSearchResults;
     private LinearLayout layoutEmptyState, layoutNoResults;
@@ -45,6 +46,10 @@ public class SearchActivity extends AppCompatActivity {
             btnFilterPortrait;
     private String currentFilter = "Tất cả";
     private Integer currentCategoryId = null;
+
+    // Sort variables
+    private String currentSort = "name_asc";
+    private String currentSortLabel = "Tên A-Z";
 
     private ProductGridAdapter searchAdapter;
     private List<Product> allProducts;
@@ -67,6 +72,7 @@ public class SearchActivity extends AppCompatActivity {
         initApiService();
         setupSearchFunctionality();
         setupFilterButtons();
+        setupSortButton();
         setupBottomNavigation();
         setupRecyclerView();
         loadAllProducts();
@@ -76,6 +82,7 @@ public class SearchActivity extends AppCompatActivity {
         editTextSearch = findViewById(R.id.editTextSearch);
         btnBack = findViewById(R.id.btnBack);
         btnClearSearch = findViewById(R.id.btnClearSearch);
+        btnSort = findViewById(R.id.btnSort);
         recyclerSearchResults = findViewById(R.id.recyclerSearchResults);
         tvSearchResults = findViewById(R.id.tvSearchResults);
         layoutEmptyState = findViewById(R.id.layoutEmptyState);
@@ -128,6 +135,45 @@ public class SearchActivity extends AppCompatActivity {
         btnFilterPortrait.setOnClickListener(v -> applyFilter("Chân dung", CATEGORY_PORTRAIT));
     }
 
+    private void setupSortButton() {
+        btnSort.setOnClickListener(v -> showSortMenu());
+    }
+
+    private void showSortMenu() {
+        PopupMenu popup = new PopupMenu(this, btnSort);
+        popup.getMenuInflater().inflate(R.menu.sort_menu, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.sort_price_asc) {
+                applySorting("price_asc", "Giá thấp - cao");
+                return true;
+            } else if (itemId == R.id.sort_price_desc) {
+                applySorting("price_desc", "Giá cao - thấp");
+                return true;
+            }
+            return false;
+        });
+
+        popup.show();
+    }
+
+    private void applySorting(String sortType, String sortLabel) {
+        currentSort = sortType;
+        currentSortLabel = sortLabel;
+
+        // Show sort label in results counter
+        updateResultsText();
+
+        // Re-perform search/filter with new sort
+        String currentQuery = editTextSearch.getText().toString().trim();
+        if (!currentQuery.isEmpty()) {
+            performApiSearch(currentQuery);
+        } else {
+            loadProductsWithFilter(currentCategoryId);
+        }
+    }
+
     private void setupBottomNavigation() {
         bottomNavigation.setSelectedItemId(R.id.nav_search);
         bottomNavigation.setOnItemSelectedListener(item -> {
@@ -152,7 +198,7 @@ public class SearchActivity extends AppCompatActivity {
     private void loadAllProducts() {
         showLoadingState();
 
-        Call<List<Product>> call = productService.getAllProducts();
+        Call<List<Product>> call = productService.getAllProducts(null, null, currentSort);
         call.enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
@@ -196,7 +242,7 @@ public class SearchActivity extends AppCompatActivity {
     private void performApiSearch(String query) {
         showLoadingState();
 
-        Call<List<Product>> call = productService.getAllProducts(query, currentCategoryId, "name_asc");
+        Call<List<Product>> call = productService.getAllProducts(query, currentCategoryId, currentSort);
         call.enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
@@ -239,7 +285,7 @@ public class SearchActivity extends AppCompatActivity {
     private void loadProductsWithFilter(Integer categoryId) {
         showLoadingState();
 
-        Call<List<Product>> call = productService.getAllProducts(null, categoryId, "name_asc");
+        Call<List<Product>> call = productService.getAllProducts(null, categoryId, currentSort);
         call.enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
@@ -305,6 +351,14 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    private void updateResultsText() {
+        if (searchAdapter != null) {
+            int resultCount = searchAdapter.getItemCount();
+            String resultText = "Tìm thấy " + resultCount + " sản phẩm • " + currentSortLabel;
+            tvSearchResults.setText(resultText);
+        }
+    }
+
     private void showEmptyState() {
         layoutEmptyState.setVisibility(View.VISIBLE);
         layoutNoResults.setVisibility(View.GONE);
@@ -325,7 +379,7 @@ public class SearchActivity extends AppCompatActivity {
         recyclerSearchResults.setVisibility(View.VISIBLE);
         tvSearchResults.setVisibility(View.VISIBLE);
 
-        String resultText = "Tìm thấy " + results.size() + " sản phẩm";
+        String resultText = "Tìm thấy " + results.size() + " sản phẩm • " + currentSortLabel;
         tvSearchResults.setText(resultText);
 
         searchAdapter.updateProducts(results);
