@@ -189,8 +189,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             startActivity(new Intent(this, SearchActivity.class));
         } else if (itemId == R.id.nav_map) {
             startActivity(new Intent(this, MapActivity.class));
-        } else if (itemId == R.id.nav_wishlist) {
-            startActivity(new Intent(this, WishlistActivity.class));
         } else if (itemId == R.id.nav_login) {
             SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
             boolean isLoggedIn = prefs.getBoolean("is_logged_in", false);

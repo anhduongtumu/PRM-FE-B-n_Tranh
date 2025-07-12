@@ -26,12 +26,43 @@ public class CartManager {
     private static final String CART_PREFS = "cart_prefs";
     private static final String CART_COUNT_KEY = "cart_count";
 
+    // Callback interface for cart operations
+    public interface CartCallback {
+        void onSuccess();
+        void onError(String error);
+    }
+
+    // Original method (for backward compatibility)
     public static void addToCart(Context context, Product product, Runnable onSuccess) {
+        addToCart(context, product, 1, new CartCallback() {
+            @Override
+            public void onSuccess() {
+                if (onSuccess != null) onSuccess.run();
+            }
+
+            @Override
+            public void onError(String error) {
+                // Handle error silently for backward compatibility
+            }
+        });
+    }
+
+    // New method with quantity support and callback
+    public static void addToCart(Context context, Product product, int quantity, CartCallback callback) {
         int userId = new UserManager(context).getUser().getId();
-        Log.d("CartManager", "userId = " + userId);
+        Log.d("CartManager", "userId = " + userId + ", quantity = " + quantity);
 
         if (userId <= 0) {
-            Toast.makeText(context, "Không tìm thấy người dùng hợp lệ", Toast.LENGTH_SHORT).show();
+            String errorMsg = "Không tìm thấy người dùng hợp lệ";
+            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+            if (callback != null) callback.onError(errorMsg);
+            return;
+        }
+
+        if (quantity <= 0) {
+            String errorMsg = "Số lượng phải lớn hơn 0";
+            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+            if (callback != null) callback.onError(errorMsg);
             return;
         }
 
@@ -39,23 +70,78 @@ public class CartManager {
 
         JsonObject body = new JsonObject();
         body.addProperty("productId", product.getId());
-        body.addProperty("quantity", 1); // mặc định thêm 1 sản phẩm
+        body.addProperty("quantity", quantity);
 
         cartService.addProductToCart(userId, body).enqueue(new Callback<Cart>() {
             @Override
             public void onResponse(Call<Cart> call, Response<Cart> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(context, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                    String successMsg = quantity == 1 ?
+                            "Đã thêm vào giỏ hàng" :
+                            "Đã thêm " + quantity + " sản phẩm vào giỏ hàng";
+                    Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show();
                     updateCartCount(context, response.body().getId());
-                    if (onSuccess != null) onSuccess.run();
+                    if (callback != null) callback.onSuccess();
                 } else {
-                    Toast.makeText(context, "Không thể thêm sản phẩm", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Không thể thêm sản phẩm";
+                    Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                    if (callback != null) callback.onError(errorMsg);
                 }
             }
 
             @Override
             public void onFailure(Call<Cart> call, Throwable t) {
-                Toast.makeText(context, "Lỗi khi thêm sản phẩm: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                String errorMsg = "Lỗi khi thêm sản phẩm: " + t.getMessage();
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                if (callback != null) callback.onError(errorMsg);
+            }
+        });
+    }
+
+    // Method to update existing cart item quantity
+    public static void updateCartItemQuantity(Context context, Product product, int newQuantity, CartCallback callback) {
+        int userId = new UserManager(context).getUser().getId();
+        Log.d("CartManager", "Updating cart item - userId = " + userId + ", newQuantity = " + newQuantity);
+
+        if (userId <= 0) {
+            String errorMsg = "Không tìm thấy người dùng hợp lệ";
+            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+            if (callback != null) callback.onError(errorMsg);
+            return;
+        }
+
+        if (newQuantity <= 0) {
+            String errorMsg = "Số lượng phải lớn hơn 0";
+            Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+            if (callback != null) callback.onError(errorMsg);
+            return;
+        }
+
+        CartService cartService = ApiClient.getClient(context).create(CartService.class);
+
+        JsonObject body = new JsonObject();
+        body.addProperty("productId", product.getId());
+        body.addProperty("quantity", newQuantity);
+
+        cartService.updateCartItem(userId, body).enqueue(new Callback<Cart>() {
+            @Override
+            public void onResponse(Call<Cart> call, Response<Cart> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Toast.makeText(context, "Đã cập nhật số lượng", Toast.LENGTH_SHORT).show();
+                    updateCartCount(context, response.body().getId());
+                    if (callback != null) callback.onSuccess();
+                } else {
+                    String errorMsg = "Không thể cập nhật số lượng";
+                    Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                    if (callback != null) callback.onError(errorMsg);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Cart> call, Throwable t) {
+                String errorMsg = "Lỗi khi cập nhật: " + t.getMessage();
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show();
+                if (callback != null) callback.onError(errorMsg);
             }
         });
     }
@@ -69,17 +155,51 @@ public class CartManager {
                     int count = 0;
                     for (CartItem item : response.body()) {
                         if (item.getCartID() == cartId) {
-                            count++;
+                            count += item.getQuantity(); // Count total quantity, not just items
                         }
                     }
                     SharedPreferences prefs = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
                     prefs.edit().putInt(CART_COUNT_KEY, count).apply();
+                    Log.d("CartManager", "Updated cart count: " + count);
                 }
             }
 
             @Override
             public void onFailure(Call<List<CartItem>> call, Throwable t) {
-                // Có thể log nếu cần
+                Log.e("CartManager", "Failed to update cart count: " + t.getMessage());
+            }
+        });
+    }
+
+    // Method to get current cart count
+    public static int getCartCount(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
+        return prefs.getInt(CART_COUNT_KEY, 0);
+    }
+
+    // Method to refresh cart count from server
+    public static void refreshCartCount(Context context, CartCallback callback) {
+        int userId = new UserManager(context).getUser().getId();
+        if (userId <= 0) {
+            if (callback != null) callback.onError("Invalid user");
+            return;
+        }
+
+        CartService cartService = ApiClient.getClient(context).create(CartService.class);
+        cartService.getCartByUserId(userId).enqueue(new Callback<Cart>() {
+            @Override
+            public void onResponse(Call<Cart> call, Response<Cart> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    updateCartCount(context, response.body().getId());
+                    if (callback != null) callback.onSuccess();
+                } else {
+                    if (callback != null) callback.onError("Failed to refresh cart");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Cart> call, Throwable t) {
+                if (callback != null) callback.onError(t.getMessage());
             }
         });
     }
