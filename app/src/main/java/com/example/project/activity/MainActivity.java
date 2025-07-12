@@ -2,6 +2,7 @@ package com.example.project.activity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView tvCartBadge;
     private int cartItemCount = 0;
 
-    // Cart management - ADD THESE DECLARATIONS
+    // Cart management
     private SharedPreferences cartPrefs;
     private static final String CART_PREFS = "cart_prefs";
     private static final String CART_COUNT_KEY = "cart_count";
@@ -91,8 +92,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        // Handle deep link for payment status
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+        if (data != null && "cuahangtranh".equals(data.getScheme())) {
+            String status = data.getQueryParameter("status");
+            String message = data.getQueryParameter("message");
+            if ("fail".equals(status)) {
+                // Show payment error
+                showPaymentError(message);
+            }
+        }
+
         initViews();
-        initCartPreferences(); // ADD THIS LINE
+        initCartPreferences();
         setupDrawer();
         setupCartHandler();
         setupChatHandler();
@@ -127,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    // ADD THIS METHOD
     private void initCartPreferences() {
         cartPrefs = getSharedPreferences(CART_PREFS, MODE_PRIVATE);
     }
@@ -309,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         sliderHandler.postDelayed(sliderRunnable, 3000);
         // Refresh cart count when returning to activity
-        CartManager.updateCartBadge(this, tvCartBadge); // Cập nhật cart khi quay lại
+        CartManager.updateCartBadge(this, tvCartBadge);
     }
 
     @Override
@@ -384,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (isLoggedIn) {
             loginItem.setTitle("Đăng xuất");
-            registerItem.setVisible(false); // Ẩn đăng ký nếu muốn
+            registerItem.setVisible(false);
         } else {
             loginItem.setTitle("Đăng nhập");
             registerItem.setVisible(true);
@@ -408,7 +420,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                     Toast.makeText(MainActivity.this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
 
-                    updateNavigationMenu(); // cập nhật lại menu
+                    updateNavigationMenu();
 
                     // Optionally chuyển về LoginActivity hoặc Home
                     Intent intent = new Intent(MainActivity.this, LoginActivity.class);
@@ -424,5 +436,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Toast.makeText(MainActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    // Add this method to handle payment errors
+    private void showPaymentError(String message) {
+        String errorMessage = message != null ? message : "Thanh toán thất bại";
+        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+
+        // Optional: You can also show an AlertDialog for better user experience
+        // AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // builder.setTitle("Lỗi thanh toán")
+        //        .setMessage(errorMessage)
+        //        .setPositiveButton("OK", null)
+        //        .show();
     }
 }

@@ -1,9 +1,12 @@
 package com.example.project.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -43,6 +46,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     private OrderItemAdapter orderItemAdapter;
     private NumberFormat currencyFormat;
     private SimpleDateFormat dateFormat;
+    private String paymentOrderId; // For deep link payment result
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +55,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
 
         initViews();
         setupFormatters();
+        handleDeepLink(); // Handle deep link first
         loadOrderData();
         setupClickListeners();
         setupRecyclerView();
@@ -75,26 +80,73 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("vi", "VN"));
     }
 
+    private void handleDeepLink() {
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+
+        if (data != null && "cuahangtranh".equals(data.getScheme())) {
+            String host = data.getHost();
+            String path = data.getPath();
+
+            Log.d("OrderConfirmation", "Deep link received: " + data.toString());
+
+            if ("payment-result".equals(host) && "/success".equals(path)) {
+                paymentOrderId = data.getQueryParameter("orderId");
+
+                // Show success message
+                Toast.makeText(this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
+
+                Log.d("OrderConfirmation", "Payment successful for order: " + paymentOrderId);
+
+                // You can also get other payment parameters if needed
+                // String vnpAmount = data.getQueryParameter("vnp_Amount");
+                // String vnpTransactionNo = data.getQueryParameter("vnp_TransactionNo");
+            }
+        }
+    }
+
     private void loadOrderData() {
         // Get order data from intent
         Intent intent = getIntent();
         if (intent != null) {
-            // In a real app, you would pass the order data from previous activity
-            double totalAmount = intent.getDoubleExtra("total", 0.0);
-            ArrayList<CartItem> cartItems = (ArrayList<CartItem>) intent.getSerializableExtra("cartItems");
-            String paymentMethod = intent.getStringExtra("paymentMethod");
-            String deliveryAddress = intent.getStringExtra("deliveryAddress");
-
-            if (cartItems != null) {
-                order = createOrderFromCart(cartItems, totalAmount, paymentMethod, deliveryAddress);
+            // Check if this is from payment deep link
+            if (paymentOrderId != null) {
+                // Load order data based on payment order ID
+                order = loadOrderByPaymentId(paymentOrderId);
             } else {
-                // Create sample order for demonstration
-                order = createSampleOrder();
+                // Normal flow from cart/billing activity
+                double totalAmount = intent.getDoubleExtra("total", 0.0);
+                ArrayList<CartItem> cartItems = (ArrayList<CartItem>) intent.getSerializableExtra("cartItems");
+                String paymentMethod = intent.getStringExtra("paymentMethod");
+                String deliveryAddress = intent.getStringExtra("deliveryAddress");
+
+                if (cartItems != null) {
+                    order = createOrderFromCart(cartItems, totalAmount, paymentMethod, deliveryAddress);
+                } else {
+                    // Create sample order for demonstration
+                    order = createSampleOrder();
+                }
             }
         } else {
             // Create sample order for demonstration
             order = createSampleOrder();
         }
+    }
+
+    private Order loadOrderByPaymentId(String paymentOrderId) {
+        // In a real app, you would load the order from database using the payment order ID
+        // For now, create a sample order with the payment order ID
+        Order order = new Order();
+        order.setOrderId(paymentOrderId); // Use the payment order ID
+        order.setOrderDate(new Date());
+        order.setTotalAmount(1230000.0); // You should get this from your database
+        order.setPaymentMethod("VNPay"); // Payment was successful via VNPay
+        order.setDeliveryAddress(getDefaultAddress());
+        order.setEstimatedDelivery("5-7 ngày làm việc");
+        order.setOrderItems(createSampleOrderItems());
+        order.setStatus("Đã thanh toán"); // Status updated to paid
+
+        return order;
     }
 
     private void setupClickListeners() {
