@@ -1,6 +1,7 @@
 package com.example.project.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -9,10 +10,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.cardview.widget.CardView;
 
 import com.example.project.R;
+import com.example.project.dto.auth.LoginResponse;
+import com.example.project.dto.order.BillingDTO;
+import com.example.project.dto.order.VNPayResponseDTO;
 import com.example.project.model.CartItem;
+import com.example.project.network.ApiClient;
+import com.example.project.service.OrderService;
+import com.example.project.utils.UserManager;
 import com.google.android.material.button.MaterialButton;
 
 import java.io.Serializable;
@@ -21,6 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class BillingActivity extends AppCompatActivity {
 
@@ -49,12 +61,18 @@ public class BillingActivity extends AppCompatActivity {
     private String paymentMethod = "vnpay"; // Default to VNPay
     private String deliveryAddress;
     private String orderId;
+    private int currentUserId;
+    private UserManager userManager;
+
     private NumberFormat currencyFormat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_billing);
+
+        userManager = new UserManager(this);
+        currentUserId = userManager.getUser().getId();
 
         initViews();
         setupCurrencyFormat();
@@ -170,17 +188,49 @@ public class BillingActivity extends AppCompatActivity {
     private void processVnpayPayment() {
         btnConfirmPayment.setEnabled(false);
         btnConfirmPayment.setText("Đang xử lý...");
+        int cartId = cartItems.get(0).getCartID();
+
+        BillingDTO billingDTO = new BillingDTO(currentUserId, cartId, "Billing Address");
+
+        OrderService orderService = ApiClient.getClient(this).create(OrderService.class);
+        orderService.checkoutVNPay(billingDTO).enqueue(new Callback<VNPayResponseDTO>() {
+            @Override
+            public void onResponse(Call<VNPayResponseDTO> call, Response<VNPayResponseDTO> response) {
+                btnConfirmPayment.setEnabled(true);
+                btnConfirmPayment.setText("Thanh toán VNPay");
+
+                if (response.isSuccessful() && response.body() != null) {
+                    String paymentUrl = response.body().getPaymentUrl();
+
+                    // Open using Chrome Custom Tabs for better user experience
+                    CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder().build();
+                    customTabsIntent.launchUrl(BillingActivity.this, Uri.parse(paymentUrl));
+
+                    // If you prefer using Intent:
+                    // Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
+                    // startActivity(browserIntent);
+                } else {
+                    Toast.makeText(BillingActivity.this, "Thanh toán thất bại. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<VNPayResponseDTO> call, Throwable t) {
+                Toast.makeText(BillingActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
 
         // Simulate VNPay payment processing
-        btnConfirmPayment.postDelayed(() -> {
-            // In a real implementation, you would:
-            // 1. Generate VNPay payment URL with proper parameters
-            // 2. Open VNPay payment gateway in WebView or Browser
-            // 3. Handle payment callback
-
-            // For simulation, let's assume payment is successful
-            simulateVnpayPayment();
-        }, 1500);
+//        btnConfirmPayment.postDelayed(() -> {
+//            // In a real implementation, you would:
+//            // 1. Generate VNPay payment URL with proper parameters
+//            // 2. Open VNPay payment gateway in WebView or Browser
+//            // 3. Handle payment callback
+//
+//            // For simulation, let's assume payment is successful
+//            simulateVnpayPayment();
+//        }, 1500);
     }
 
     private void simulateVnpayPayment() {
@@ -223,6 +273,8 @@ public class BillingActivity extends AppCompatActivity {
             btnConfirmPayment.setText(paymentMethod.equals("vnpay") ? "Thanh Toán VNPay" : "Đặt Hàng");
         }
     }
+
+
 
     @Override
     public void onBackPressed() {

@@ -17,6 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class AdminChatsActivity extends AppCompatActivity {
 
@@ -24,7 +25,7 @@ public class AdminChatsActivity extends AppCompatActivity {
     private AdminChatsAdapter adapter;
     private Toolbar toolbarAdminChats;
 
-    private String adminId;
+    private int adminId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +60,7 @@ public class AdminChatsActivity extends AppCompatActivity {
     }
 
     private void loadAdminChats() {
-        FirebaseUtil.getAdminChats(adminId)
+        FirebaseUtil.getAdminChats(String.valueOf(adminId))
                 .addSnapshotListener(this, (snapshots, e) -> {
                     if (e != null) {
                         e.printStackTrace();
@@ -80,11 +81,11 @@ public class AdminChatsActivity extends AppCompatActivity {
                 });
     }
 
-    private String getOtherUserId(List<String> participants, String adminId) {
+    private int getOtherUserId(List<String> participants, int adminId) {
         for (String id : participants) {
-            if (!id.equals(adminId)) return id;
+            if (!Objects.equals(id, String.valueOf(adminId))) return Integer.parseInt(id);
         }
-        return "";
+        return adminId;
     }
 
     @Override

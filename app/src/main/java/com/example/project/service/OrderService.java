@@ -1,8 +1,10 @@
 package com.example.project.service;
 
+import com.example.project.dto.order.VNPayResponseDTO;
 import com.example.project.model.Order;
 import com.example.project.dto.order.CreateOrderDto;
 import com.example.project.dto.order.UpdateOrderDto;
+import com.example.project.dto.order.BillingDTO;
 
 import java.util.List;
 
@@ -17,6 +19,12 @@ import retrofit2.http.Path;
 public interface OrderService {
     @GET("/api/orders")
     Call<List<Order>> getAllOrders();
+
+    @POST("/api/orders/checkout/CashOnDelivery")
+    Call<VNPayResponseDTO> checkoutCOD(@Body BillingDTO dto);
+
+    @POST("/api/orders/checkout/VNPay")
+    Call<VNPayResponseDTO> checkoutVNPay(@Body BillingDTO dto);
 
     @GET("/api/orders/{id}")
     Call<Order> getOrderById(@Path("id") int id);

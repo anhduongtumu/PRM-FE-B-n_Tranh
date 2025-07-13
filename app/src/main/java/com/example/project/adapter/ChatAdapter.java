@@ -18,13 +18,13 @@ import java.util.Locale;
 
 public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolder> {
 
-    private final String currentUserId;
+    private final int currentUserId;
     private final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy, h:mm a", Locale.getDefault());
 
     private static final int VIEW_TYPE_SENT = 1;
     private static final int VIEW_TYPE_RECEIVED = 2;
 
-    public ChatAdapter(String currentUserId) {
+    public ChatAdapter(int currentUserId) {
         super(new ChatMessageDiffCallback());
         this.currentUserId = currentUserId;
     }
@@ -32,7 +32,7 @@ public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolde
     @Override
     public int getItemViewType(int position) {
         ChatMessage message = getItem(position);
-        if (message.getSenderId().equals(currentUserId)) {
+        if (message.getSenderId().equals(String.valueOf(currentUserId))) {
             return VIEW_TYPE_SENT;
         } else {
             return VIEW_TYPE_RECEIVED;

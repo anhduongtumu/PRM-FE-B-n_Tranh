@@ -52,6 +52,13 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging:24.0.0")
     implementation("com.google.firebase:firebase-analytics")
 
+    //Cross-platform notifications
+    implementation("me.leolin:ShortcutBadger:1.1.22@aar")
+
+    //CustomeChromeTabs
+    implementation("androidx.browser:browser:1.8.0")
+
+
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
     implementation("com.squareup.retrofit2:retrofit:3.0.0")

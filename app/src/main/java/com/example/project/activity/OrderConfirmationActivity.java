@@ -141,17 +141,22 @@ public class OrderConfirmationActivity extends AppCompatActivity {
 
             Log.d(TAG, "Deep link received: " + data.toString());
 
-            if ("payment-result".equals(host) && "/success".equals(path)) {
+            if ("payment-result".equals(host)) {
+                String status = data.getQueryParameter("status");
                 paymentOrderId = data.getQueryParameter("orderId");
 
-                // Show success message
-                Toast.makeText(this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
-
-                Log.d(TAG, "Payment successful for order: " + paymentOrderId);
-
-                // You can also get other payment parameters if needed
-                // String vnpAmount = data.getQueryParameter("vnp_Amount");
-                // String vnpTransactionNo = data.getQueryParameter("vnp_TransactionNo");
+                if ("success".equalsIgnoreCase(status) && paymentOrderId != null) {
+                    Toast.makeText(this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Payment success, loading order: " + paymentOrderId);
+                    loadOrderByPaymentId(paymentOrderId);
+                } else if ("fail".equalsIgnoreCase(status)) {
+                    String message = data.getQueryParameter("message");
+                    Toast.makeText(this, "Thanh toán thất bại: " + (message != null ? message : ""), Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Payment failed: " + message);
+                } else {
+                    Toast.makeText(this, "Trạng thái thanh toán không xác định", Toast.LENGTH_SHORT).show();
+                    Log.w(TAG, "Unknown payment status: " + status);
+                }
             }
         }
     }
@@ -300,7 +305,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         if (intent != null) {
             // Check if this is from payment deep link
             if (paymentOrderId != null) {
-                loadOrderByPaymentId(paymentOrderId);
+                return;
             } else {
                 // Check if order ID is provided
                 int orderId = intent.getIntExtra("orderId", -1);

@@ -27,7 +27,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(@NonNull String token) {
         UserManager userManager = new UserManager(getApplicationContext());
-        String userId = userManager.getUser().getId();
+        String userId = String.valueOf(userManager.getUser().getId());
 
         if (userId != null) {
             FirebaseFirestore.getInstance()
@@ -45,7 +45,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
         Log.d(TAG, "From: " + remoteMessage.getFrom());
         UserManager userManager = new UserManager(getApplicationContext());
-        String userId = userManager.getUser().getId();
+        int userId = userManager.getUser().getId();
         Log.d(TAG, "Message received for user: " + userId);
 
         if (remoteMessage.getNotification() != null) {

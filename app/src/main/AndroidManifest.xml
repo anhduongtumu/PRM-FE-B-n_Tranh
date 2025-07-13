@@ -31,15 +31,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="cuahangtranh" />
             </intent-filter>
-
-            <!-- Deep link for payment result -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="cuahangtranh"
-                    android:host="payment-result" />
-            </intent-filter>
         </activity>
 
         <activity android:name=".activity.LoginActivity" />
@@ -63,8 +54,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="cuahangtranh"
-                    android:host="payment-result"
-                    android:pathPrefix="/success" />
+                    android:host="payment-result"/>
             </intent-filter>
         </activity>
         <activity android:name=".activity.BillingActivity" />

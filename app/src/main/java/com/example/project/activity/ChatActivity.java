@@ -36,9 +36,9 @@ public class ChatActivity extends AppCompatActivity {
     private ChatAdapter chatAdapter;
     private List<ChatMessage> messagesList = new ArrayList<>();
 
-    private String currentUserId;
+    private int currentUserId;
     private String customerName;
-    private String otherUserId; // admin UID
+    private int otherUserId; // admin UID
     private String chatId;
 
     private UserManager userManager;
@@ -64,24 +64,23 @@ public class ChatActivity extends AppCompatActivity {
         customerName = userManager.getUser().getUsername();
 
         // Get otherUserId from intent (default to "1" if missing)
-        otherUserId = getIntent().getStringExtra("otherUserId");
-        if (TextUtils.isEmpty(otherUserId)) {
-            otherUserId = "1";
-        }
+        otherUserId = getIntent().getIntExtra("otherUserId", 1);
 
         recyclerViewChat = findViewById(R.id.recyclerViewChat);
         editTextMessage = findViewById(R.id.editTextMessage);
         buttonSend = findViewById(R.id.buttonSend);
 
         setupRecyclerView();
-        if (!currentUserId.equals("1")){
-            chatId = FirebaseUtil.generateChatId(currentUserId, otherUserId);
-
+        if (currentUserId != 1 ){
+            chatId = FirebaseUtil.generateChatId(
+                    String.valueOf(currentUserId),
+                    String.valueOf(otherUserId)
+            );
 
             FirebaseUtil.createChatIfNotExists(
                     chatId,
-                    currentUserId,
-                    otherUserId,
+                    String.valueOf(currentUserId),
+                    String.valueOf(otherUserId),
                     customerName,
                     unused -> loadMessagesFromFirestore(),
                     e -> Toast.makeText(this, "Failed to create chat: " + e.getMessage(), Toast.LENGTH_SHORT).show()
@@ -122,8 +121,8 @@ public class ChatActivity extends AppCompatActivity {
         String messageText = editTextMessage.getText().toString().trim();
         if (!messageText.isEmpty()) {
             FirebaseUtil.sendMessage(
-                    currentUserId,
-                    otherUserId,
+                    String.valueOf(currentUserId),
+                    String.valueOf(otherUserId),
                     messageText,
                     unused -> editTextMessage.setText(""),
                     e -> Toast.makeText(this, "Failed to send: " + e.getMessage(), Toast.LENGTH_SHORT).show()
