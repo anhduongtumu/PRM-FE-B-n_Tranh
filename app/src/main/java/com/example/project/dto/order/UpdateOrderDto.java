@@ -1,4 +1,4 @@
-package com.example.project.dto;
+package com.example.project.dto.order;
 
 public class UpdateOrderDto {
     private String orderStatus;

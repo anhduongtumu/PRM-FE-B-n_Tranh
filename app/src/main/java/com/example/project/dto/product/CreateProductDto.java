@@ -1,4 +1,4 @@
-package com.example.project.dto;
+package com.example.project.dto.product;
 
 public class CreateProductDto {
     private String productName;

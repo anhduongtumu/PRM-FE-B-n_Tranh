@@ -1,4 +1,4 @@
-package com.example.project.dto;
+package com.example.project.dto.cart;
 
 public class CreateCartDto {
     private int userID;
@@ -8,7 +8,7 @@ public class CreateCartDto {
     public CreateCartDto() {}
 
     public int getUserID() { return userID; }
-    public void setUserID(int userID) { this.userID = userID; }
+    public void setUserID(int id) { this.userID = userID; }
 
     public double getTotalPrice() { return totalPrice; }
     public void setTotalPrice(double totalPrice) { this.totalPrice = totalPrice; }

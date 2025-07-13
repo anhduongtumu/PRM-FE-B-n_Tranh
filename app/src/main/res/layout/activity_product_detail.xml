@@ -132,39 +132,112 @@
                 android:textColor="@color/primary_color"
                 android:layout_marginTop="8dp" />
 
-            <!-- Buttons Container -->
+            <!-- Full Description Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mô tả chi tiết"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/textFullDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mô tả chi tiết sản phẩm sẽ được hiển thị ở đây..."
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/text_primary" />
+
+            <!-- Technical Specifications Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Thông số kỹ thuật"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/textTechnicalSpecs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Thông số kỹ thuật sẽ được hiển thị ở đây..."
+                android:textSize="14sp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/text_primary" />
+
+            <!-- Quantity Selector -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="24dp"
-                android:gravity="center"
-                android:weightSum="10">
+                android:gravity="center_vertical">
 
-                <!-- Wishlist Button -->
-                <ImageButton
-                    android:id="@+id/btnWishlist"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="2"
-                    android:background="@drawable/wishlist_button_background"
-                    android:contentDescription="Add to wishlist"
-                    android:scaleType="center"
-                    android:src="@drawable/ic_favorite_border"
-                    app:tint="@color/primary_color" />
-
-                <!-- Add to Cart Button -->
-                <Button
-                    android:id="@+id/btnAddToCart"
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="8"
-                    android:text="Thêm vào giỏ hàng"
-                    android:backgroundTint="@color/primary_color"
-                    android:textColor="@android:color/white"
-                    android:layout_marginEnd="8dp" />
+                    android:text="Số lượng:"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="16dp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@drawable/quantity_selector_background"
+                    android:padding="4dp">
+
+                    <ImageButton
+                        android:id="@+id/btnDecreaseQuantity"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_remove"
+                        android:contentDescription="Decrease quantity"
+                        android:scaleType="center"
+                        app:tint="@color/primary_color" />
+
+                    <TextView
+                        android:id="@+id/textQuantity"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:text="1"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@android:color/transparent" />
+
+                    <ImageButton
+                        android:id="@+id/btnIncreaseQuantity"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_add"
+                        android:contentDescription="Increase quantity"
+                        android:scaleType="center"
+                        app:tint="@color/primary_color" />
+
+                </LinearLayout>
 
             </LinearLayout>
+
+            <!-- Add to Cart Button -->
+            <Button
+                android:id="@+id/btnAddToCart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Thêm vào giỏ hàng"
+                android:backgroundTint="@color/primary_color"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:paddingVertical="12dp" />
         </LinearLayout>
     </ScrollView>
 

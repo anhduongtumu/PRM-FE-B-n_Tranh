@@ -1,4 +1,4 @@
-package com.example.project.dto;
+package com.example.project.dto.cart;
 
 public class UpdateCartDto {
     private String status;

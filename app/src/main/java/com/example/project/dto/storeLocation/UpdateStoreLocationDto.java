@@ -1,4 +1,4 @@
-package com.example.project.dto;
+package com.example.project.dto.storeLocation;
 
 public class UpdateStoreLocationDto {
     private String address;

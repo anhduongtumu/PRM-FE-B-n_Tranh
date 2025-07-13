@@ -22,6 +22,12 @@ import java.util.List;
 public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.ProductViewHolder> {
 
     private List<Product> products = new ArrayList<>();
+    private OnItemClickListener listener;
+
+    // Interface for click listener
+    public interface OnItemClickListener {
+        void onItemClick(Product product);
+    }
 
     public ProductGridAdapter(List<Product> products) {
         this.products = products;
@@ -30,6 +36,10 @@ public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.
     public void updateProducts(List<Product> newProducts) {
         this.products = newProducts;
         notifyDataSetChanged();
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -43,7 +53,7 @@ public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.
     @Override
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = products.get(position);
-        holder.bind(product);
+        holder.bind(product, listener);
     }
 
     @Override
@@ -51,58 +61,82 @@ public class ProductGridAdapter extends RecyclerView.Adapter<ProductGridAdapter.
         return products.size();
     }
 
-    class ProductViewHolder extends RecyclerView.ViewHolder {
+    static class ProductViewHolder extends RecyclerView.ViewHolder {
         ImageView imageProduct, imageSale;
         TextView textName, textPrice, textOriginalPrice, textRating, textCategory;
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageProduct = itemView.findViewById(R.id.ivProductImage);
+            imageProduct = itemView.findViewById(R.id.imageProduct);
             imageSale = itemView.findViewById(R.id.imageSale);
-            textName = itemView.findViewById(R.id.tvProductName);
-            textPrice = itemView.findViewById(R.id.tvProductPrice);
-            textOriginalPrice = itemView.findViewById(R.id.tvOriginalPrice);
-            textRating = itemView.findViewById(R.id.tvRating);
-            textCategory = itemView.findViewById(R.id.tvCategory);
+            textName = itemView.findViewById(R.id.textName);
+            textPrice = itemView.findViewById(R.id.textPrice);
+            textOriginalPrice = itemView.findViewById(R.id.textOriginalPrice);
+            textRating = itemView.findViewById(R.id.textRating);
+            textCategory = itemView.findViewById(R.id.textCategory);
         }
 
-        public void bind(Product product) {
-            Glide.with(itemView.getContext())
-                    .load(product.getImageURL())
-                    .placeholder(R.drawable.placeholder_image)
-                    .into(imageProduct);
-
-            textName.setText(product.getProductName());
-            textPrice.setText(product.getPrice() + "đ");
-            textRating.setText("★ " + product.getRating());
-
-            // Lấy tên danh mục an toàn
-            String categoryName = "Không rõ";
-            if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
-                categoryName = product.getCategory().getCategoryName();
+        public void bind(Product product, OnItemClickListener listener) {
+            // Set text fields first
+            if (textName != null) {
+                textName.setText(product.getProductName());
             }
-            textCategory.setText(categoryName);
 
+            if (textPrice != null) {
+                textPrice.setText(product.getPrice() + "đ");
+            }
+
+            if (textRating != null) {
+                textRating.setText("★ " + product.getRating());
+            }
+
+            // Set category safely
+            if (textCategory != null) {
+                String categoryName = "Không rõ";
+                if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
+                    categoryName = product.getCategory().getCategoryName();
+                }
+                textCategory.setText(categoryName);
+            }
+
+            // Handle sale price and original price
             if (product.isOnSale() && product.getOriginalPrice() != null && !product.getOriginalPrice().isEmpty()) {
-                imageSale.setVisibility(View.VISIBLE);
-                textOriginalPrice.setVisibility(View.VISIBLE);
-                textOriginalPrice.setText(product.getOriginalPrice() + "đ");
-                textOriginalPrice.setPaintFlags(textOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                if (imageSale != null) {
+                    imageSale.setVisibility(View.VISIBLE);
+                }
+                if (textOriginalPrice != null) {
+                    textOriginalPrice.setVisibility(View.VISIBLE);
+                    textOriginalPrice.setText(product.getOriginalPrice() + "đ");
+                    textOriginalPrice.setPaintFlags(textOriginalPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                }
             } else {
-                imageSale.setVisibility(View.GONE);
-                textOriginalPrice.setVisibility(View.GONE);
+                if (imageSale != null) {
+                    imageSale.setVisibility(View.GONE);
+                }
+                if (textOriginalPrice != null) {
+                    textOriginalPrice.setVisibility(View.GONE);
+                }
             }
 
-            // Click để mở ProductDetailActivity
+            // Load image with null check
+            if (imageProduct != null) {
+                Glide.with(itemView.getContext())
+                        .load(product.getImageURL())
+                        .placeholder(R.drawable.placeholder_image)
+                        .into(imageProduct);
+            }
+
+            // Set click listener
             itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(itemView.getContext(), ProductDetailActivity.class);
-                intent.putExtra("name", product.getProductName());
-                intent.putExtra("price", product.getPrice() + "đ");
-                intent.putExtra("originalPrice", product.getOriginalPrice());
-                intent.putExtra("rating", product.getRating());
-                intent.putExtra("imageUrl", product.getImageURL()); // dùng URL thay vì res
-                intent.putExtra("category", product.getCategory().getCategoryName());
-                itemView.getContext().startActivity(intent);
+                if (listener != null) {
+                    // Use the listener if it's set (from SearchActivity)
+                    listener.onItemClick(product);
+                } else {
+                    // Fallback to direct navigation (for other activities)
+                    Intent intent = new Intent(itemView.getContext(), ProductDetailActivity.class);
+                    intent.putExtra("product", product);
+                    itemView.getContext().startActivity(intent);
+                }
             });
         }
     }

@@ -22,7 +22,7 @@ public class UserManager {
 
     public void saveUser(UserDto user) {
         prefs.edit()
-                .putString(KEY_ID, user.getId())
+                .putInt(KEY_ID, user.getId())
                 .putString(KEY_USERNAME, user.getUsername())
                 .putString(KEY_EMAIL, user.getEmail())
                 .putString(KEY_PHONE, user.getPhoneNumber())
@@ -33,7 +33,7 @@ public class UserManager {
 
     public UserDto getUser() {
         UserDto user = new UserDto();
-        user.setId(prefs.getString(KEY_ID, null));
+        user.setId(prefs.getInt(KEY_ID, 0));
         user.setUsername(prefs.getString(KEY_USERNAME, null));
         user.setEmail(prefs.getString(KEY_EMAIL, null));
         user.setPhoneNumber(prefs.getString(KEY_PHONE, null));

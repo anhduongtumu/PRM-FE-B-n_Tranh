@@ -1,5 +1,6 @@
 package com.example.project.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import com.example.project.model.CartItem;
 import com.example.project.model.Product;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -46,7 +48,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         CartItem cartItem = cartItems.get(position);
         Product product = cartItem.getProduct();
-
+        Log.d("DEBUG", "Bind item: " + product);
         // Load product image from URL using Glide
         Glide.with(holder.itemView.getContext())
                 .load(product.getImageURL())
@@ -54,11 +56,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 .into(holder.ivProductImage);
 
         holder.tvProductName.setText(product.getProductName());
-        if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
-            holder.tvProductCategory.setText(product.getCategory().getCategoryName());
-        } else {
-            holder.tvProductCategory.setText("Không rõ danh mục"); // hoặc ẩn view nếu bạn muốn
-        }
+//        if (product.getCategory() != null && product.getCategory().getCategoryName() != null) {
+//            holder.tvProductCategory.setText(product.getCategory().getCategoryName());
+//        } else {
+//            holder.tvProductCategory.setText("Không rõ danh mục"); // hoặc ẩn view nếu bạn muốn
+//        }
         holder.tvProductPrice.setText(currencyFormat.format(product.getPrice()) + "đ");
         holder.tvProductOriginalPrice.setVisibility(View.GONE);
 
@@ -91,8 +93,15 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         return cartItems != null ? cartItems.size() : 0;
     }
 
-    public void updateCartItems(List<CartItem> newCartItems) {
-        this.cartItems = newCartItems;
+    public void updateCartItems(List<CartItem> newItems) {
+        // Tạo copy của newItems trước khi clear để tránh reference issue
+        List<CartItem> itemsCopy = new ArrayList<>();
+        if (newItems != null) {
+            itemsCopy.addAll(newItems);
+        }
+
+        this.cartItems.clear();
+        this.cartItems.addAll(itemsCopy);
         notifyDataSetChanged();
     }
 

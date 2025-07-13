@@ -108,6 +108,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
+        android:visibility="visible"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toTopOf="@id/layoutCheckout"
         app:layout_constraintStart_toStartOf="parent"
@@ -207,7 +208,7 @@
                         android:id="@+id/tvSubtotal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1.200.000đ"
+                        android:text="0đ"
                         android:textSize="16sp"
                         android:textColor="@color/text_primary" />
 
@@ -232,7 +233,7 @@
                         android:id="@+id/tvShipping"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="30.000đ"
+                        android:text="0đ"
                         android:textSize="16sp"
                         android:textColor="@color/text_primary" />
 
@@ -292,7 +293,7 @@
                         android:id="@+id/tvTotal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1.230.000đ"
+                        android:text="0đ"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:textColor="@color/primary_color"

@@ -1,4 +1,4 @@
-package com.example.project.dto;
+package com.example.project.dto.category;
 
 public class UpdateCategoryDto {
     private String categoryName;

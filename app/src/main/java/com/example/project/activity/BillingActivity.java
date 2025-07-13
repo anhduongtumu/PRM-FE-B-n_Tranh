@@ -1,9 +1,7 @@
 package com.example.project.activity;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -16,10 +14,6 @@ import androidx.cardview.widget.CardView;
 import com.example.project.R;
 import com.example.project.model.CartItem;
 import com.google.android.material.button.MaterialButton;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.io.Serializable;
 import java.text.NumberFormat;
@@ -38,16 +32,13 @@ public class BillingActivity extends AppCompatActivity {
     private TextView tvDiscount;
     private TextView tvTotal;
     private LinearLayout layoutDiscount;
-    private ImageView ivMomoQR;
-    private TextView tvMomoInstructions;
-    private TextView tvCountdown;
     private MaterialButton btnConfirmPayment;
     private MaterialButton btnCancelPayment;
     private CardView cardPaymentMethod;
     private LinearLayout layoutCashOnDelivery;
-    private LinearLayout layoutMomoPayment;
+    private LinearLayout layoutVnpayPayment;
     private TextView tvCashOnDelivery;
-    private TextView tvMomoPayment;
+    private TextView tvVnpayPayment;
 
     // Data
     private double subtotal;
@@ -55,11 +46,10 @@ public class BillingActivity extends AppCompatActivity {
     private double discount;
     private double total;
     private List<CartItem> cartItems;
-    private String paymentMethod = "momo"; // Default to MoMo
+    private String paymentMethod = "vnpay"; // Default to VNPay
     private String deliveryAddress;
     private String orderId;
     private NumberFormat currencyFormat;
-    private CountDownTimer paymentTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,8 +62,6 @@ public class BillingActivity extends AppCompatActivity {
         setupClickListeners();
         generateOrderId();
         updateUI();
-        generateMomoQR();
-        startPaymentTimer();
     }
 
     private void initViews() {
@@ -84,16 +72,13 @@ public class BillingActivity extends AppCompatActivity {
         tvDiscount = findViewById(R.id.tvDiscount);
         tvTotal = findViewById(R.id.tvTotal);
         layoutDiscount = findViewById(R.id.layoutDiscount);
-        ivMomoQR = findViewById(R.id.ivMomoQR);
-        tvMomoInstructions = findViewById(R.id.tvMomoInstructions);
-        tvCountdown = findViewById(R.id.tvCountdown);
         btnConfirmPayment = findViewById(R.id.btnConfirmPayment);
         btnCancelPayment = findViewById(R.id.btnCancelPayment);
         cardPaymentMethod = findViewById(R.id.cardPaymentMethod);
         layoutCashOnDelivery = findViewById(R.id.layoutCashOnDelivery);
-        layoutMomoPayment = findViewById(R.id.layoutMomoPayment);
+        layoutVnpayPayment = findViewById(R.id.layoutVnpayPayment);
         tvCashOnDelivery = findViewById(R.id.tvCashOnDelivery);
-        tvMomoPayment = findViewById(R.id.tvMomoPayment);
+        tvVnpayPayment = findViewById(R.id.tvVnpayPayment);
     }
 
     private void setupCurrencyFormat() {
@@ -115,29 +100,22 @@ public class BillingActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        btnBack.setOnClickListener(v -> {
-            if (paymentTimer != null) {
-                paymentTimer.cancel();
-            }
-            finish();
-        });
+        btnBack.setOnClickListener(v -> finish());
 
         layoutCashOnDelivery.setOnClickListener(v -> selectPaymentMethod("cod"));
-        layoutMomoPayment.setOnClickListener(v -> selectPaymentMethod("momo"));
+        layoutVnpayPayment.setOnClickListener(v -> selectPaymentMethod("vnpay"));
 
         btnConfirmPayment.setOnClickListener(v -> {
-            if (paymentMethod.equals("momo")) {
-                // Simulate payment verification
-                simulatePaymentVerification();
+            if (paymentMethod.equals("vnpay")) {
+                // Redirect to VNPay payment gateway
+                processVnpayPayment();
             } else {
+                // Cash on delivery - proceed directly
                 proceedToOrderConfirmation();
             }
         });
 
         btnCancelPayment.setOnClickListener(v -> {
-            if (paymentTimer != null) {
-                paymentTimer.cancel();
-            }
             Toast.makeText(this, "Đã hủy thanh toán", Toast.LENGTH_SHORT).show();
             finish();
         });
@@ -147,31 +125,18 @@ public class BillingActivity extends AppCompatActivity {
         paymentMethod = method;
 
         // Update UI based on selected payment method
-        if (method.equals("momo")) {
-            tvMomoPayment.setBackgroundResource(R.drawable.bg_selected_payment);
-            tvCashOnDelivery.setBackgroundResource(R.drawable.bg_unselected_payment);
+        if (method.equals("vnpay")) {
+            // Reset backgrounds
+            layoutVnpayPayment.setBackgroundResource(R.drawable.bg_selected_payment);
+            layoutCashOnDelivery.setBackgroundResource(R.drawable.bg_unselected_payment);
 
-            // Show MoMo QR section
-            ivMomoQR.setVisibility(View.VISIBLE);
-            tvMomoInstructions.setVisibility(View.VISIBLE);
-            tvCountdown.setVisibility(View.VISIBLE);
-            btnConfirmPayment.setText("Xác Nhận Thanh Toán");
-
-            generateMomoQR();
-            startPaymentTimer();
+            btnConfirmPayment.setText("Thanh Toán VNPay");
         } else {
-            tvCashOnDelivery.setBackgroundResource(R.drawable.bg_selected_payment);
-            tvMomoPayment.setBackgroundResource(R.drawable.bg_unselected_payment);
+            // Reset backgrounds
+            layoutCashOnDelivery.setBackgroundResource(R.drawable.bg_selected_payment);
+            layoutVnpayPayment.setBackgroundResource(R.drawable.bg_unselected_payment);
 
-            // Hide MoMo QR section
-            ivMomoQR.setVisibility(View.GONE);
-            tvMomoInstructions.setVisibility(View.GONE);
-            tvCountdown.setVisibility(View.GONE);
             btnConfirmPayment.setText("Đặt Hàng");
-
-            if (paymentTimer != null) {
-                paymentTimer.cancel();
-            }
         }
     }
 
@@ -195,90 +160,43 @@ public class BillingActivity extends AppCompatActivity {
         }
 
         // Set initial payment method selection
-        selectPaymentMethod("momo");
+        selectPaymentMethod("vnpay");
     }
 
     private String formatPrice(double price) {
         return currencyFormat.format(price) + "đ";
     }
 
-    private void generateMomoQR() {
-        try {
-            // MoMo QR format: 2|99|{phone}|{name}|{amount}|{message}|0|0
-            String momoPhone = "0901234567"; // Example MoMo phone number
-            String momoName = "Tranh Cua Hang";
-            String amount = String.valueOf((long) total);
-            String message = "Thanh toan don hang " + orderId;
-
-            String qrContent = String.format("2|99|%s|%s|%s|%s|0|0",
-                    momoPhone, momoName, amount, message);
-
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 300, 300);
-
-            Bitmap bitmap = Bitmap.createBitmap(300, 300, Bitmap.Config.RGB_565);
-            for (int x = 0; x < 300; x++) {
-                for (int y = 0; y < 300; y++) {
-                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
-                }
-            }
-
-            ivMomoQR.setImageBitmap(bitmap);
-
-        } catch (WriterException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Không thể tạo mã QR", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void startPaymentTimer() {
-        if (paymentTimer != null) {
-            paymentTimer.cancel();
-        }
-
-        // 10 minute timer for payment
-        paymentTimer = new CountDownTimer(600000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                long minutes = millisUntilFinished / 60000;
-                long seconds = (millisUntilFinished % 60000) / 1000;
-                tvCountdown.setText(String.format("Thời gian còn lại: %02d:%02d", minutes, seconds));
-            }
-
-            @Override
-            public void onFinish() {
-                tvCountdown.setText("Hết thời gian thanh toán");
-                Toast.makeText(BillingActivity.this, "Hết thời gian thanh toán", Toast.LENGTH_LONG).show();
-                finish();
-            }
-        };
-        paymentTimer.start();
-    }
-
-    private void simulatePaymentVerification() {
+    private void processVnpayPayment() {
         btnConfirmPayment.setEnabled(false);
-        btnConfirmPayment.setText("Đang xác nhận...");
+        btnConfirmPayment.setText("Đang xử lý...");
 
-        // Simulate payment verification delay
+        // Simulate VNPay payment processing
         btnConfirmPayment.postDelayed(() -> {
-            // Simulate successful payment (90% success rate)
-            Random random = new Random();
-            if (random.nextInt(10) < 9) {
-                Toast.makeText(this, "Thanh toán thành công!", Toast.LENGTH_SHORT).show();
-                proceedToOrderConfirmation();
-            } else {
-                Toast.makeText(this, "Thanh toán thất bại. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
-                btnConfirmPayment.setEnabled(true);
-                btnConfirmPayment.setText("Xác Nhận Thanh Toán");
-            }
-        }, 2000);
+            // In a real implementation, you would:
+            // 1. Generate VNPay payment URL with proper parameters
+            // 2. Open VNPay payment gateway in WebView or Browser
+            // 3. Handle payment callback
+
+            // For simulation, let's assume payment is successful
+            simulateVnpayPayment();
+        }, 1500);
+    }
+
+    private void simulateVnpayPayment() {
+        // Simulate VNPay payment result (90% success rate)
+        Random random = new Random();
+        if (random.nextInt(10) < 9) {
+            Toast.makeText(this, "Thanh toán VNPay thành công!", Toast.LENGTH_SHORT).show();
+            proceedToOrderConfirmation();
+        } else {
+            Toast.makeText(this, "Thanh toán VNPay thất bại. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+            btnConfirmPayment.setEnabled(true);
+            btnConfirmPayment.setText("Thanh Toán VNPay");
+        }
     }
 
     private void proceedToOrderConfirmation() {
-        if (paymentTimer != null) {
-            paymentTimer.cancel();
-        }
-
         try {
             Intent intent = new Intent(this, OrderConfirmationActivity.class);
 
@@ -289,9 +207,9 @@ public class BillingActivity extends AppCompatActivity {
             intent.putExtra("shipping", shipping);
             intent.putExtra("discount", discount);
             intent.putExtra("cartItems", (Serializable) new ArrayList<>(cartItems));
-            intent.putExtra("paymentMethod", paymentMethod.equals("momo") ? "MoMo" : "Thanh toán khi nhận hàng");
+            intent.putExtra("paymentMethod", paymentMethod.equals("vnpay") ? "VNPay" : "Thanh toán khi nhận hàng");
             intent.putExtra("deliveryAddress", deliveryAddress);
-            intent.putExtra("paymentStatus", "paid");
+            intent.putExtra("paymentStatus", paymentMethod.equals("vnpay") ? "paid" : "pending");
 
             startActivity(intent);
             finish();
@@ -299,22 +217,15 @@ public class BillingActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Có lỗi xảy ra. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
-        }
-    }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (paymentTimer != null) {
-            paymentTimer.cancel();
+            // Reset button state
+            btnConfirmPayment.setEnabled(true);
+            btnConfirmPayment.setText(paymentMethod.equals("vnpay") ? "Thanh Toán VNPay" : "Đặt Hàng");
         }
     }
 
     @Override
     public void onBackPressed() {
-        if (paymentTimer != null) {
-            paymentTimer.cancel();
-        }
         super.onBackPressed();
     }
 }

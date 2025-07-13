@@ -5,4 +5,5 @@
     <string name="clear_search">Clear search</string>
     <string name="search_empty_icon">Search empty state</string>
     <string name="no_results_icon">No results found</string>
+    <string name="sort_button">Sort</string>
 </resources>

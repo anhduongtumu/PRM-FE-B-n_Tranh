@@ -254,32 +254,33 @@
                         android:layout_marginBottom="16dp" />
 
                     <!-- Delivery Address -->
+
+                    <!-- Estimated Delivery -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="16dp"
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="4dp"
                             android:text="Địa chỉ giao hàng:"
-                            android:textSize="16sp"
                             android:textColor="@color/text_secondary"
-                            android:layout_marginBottom="4dp" />
+                            android:textSize="16sp" />
 
                         <TextView
                             android:id="@+id/tvDeliveryAddress"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:lineSpacingExtra="2dp"
                             android:text="Nguyễn Văn A\n123 Nguyễn Thị Minh Khai, Quận 1\nTP. Hồ Chí Minh\n0901234567"
-                            android:textSize="16sp"
                             android:textColor="@color/text_primary"
-                            android:lineSpacingExtra="2dp" />
+                            android:textSize="16sp" />
 
                     </LinearLayout>
 
-                    <!-- Estimated Delivery -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -326,7 +327,7 @@
             <!-- Order Items Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginBottom="16dp"
                 app:cardElevation="4dp"
                 app:cardCornerRadius="12dp">
@@ -347,17 +348,19 @@
                         android:fontFamily="sans-serif-medium"
                         android:layout_marginBottom="16dp" />
 
-                    <!-- Order Items RecyclerView -->
+                    <!-- Order Items RecyclerView - FIXED -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerOrderItems"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false" />
+                        android:layout_height="match_parent"
+                        android:nestedScrollingEnabled="false"
+                        android:focusable="false"
+                        android:overScrollMode="never"
+                        android:minHeight="200dp" />
 
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
-
             <!-- Next Steps Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
