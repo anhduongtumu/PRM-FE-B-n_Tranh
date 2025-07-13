@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Blue Card (Back) -->
+    <path
+        android:fillColor="#0066CC"
+        android:pathData="M20,25 L65,25 Q70,25 70,30 L70,55 Q70,60 65,60 L20,60 Q15,60 15,55 L15,30 Q15,25 20,25 Z" />
+
+    <!-- Fingerprint/Wave Pattern on Blue Card -->
+    <path
+        android:fillColor="#0080FF"
+        android:fillAlpha="0.6"
+        android:pathData="M25,35 Q35,30 45,35 Q55,40 65,35"
+        android:strokeWidth="1.5"
+        android:strokeColor="#0080FF" />
+
+    <path
+        android:fillColor="#0080FF"
+        android:fillAlpha="0.4"
+        android:pathData="M25,40 Q35,35 45,40 Q55,45 65,40"
+        android:strokeWidth="1.5"
+        android:strokeColor="#0080FF" />
+
+    <path
+        android:fillColor="#0080FF"
+        android:fillAlpha="0.3"
+        android:pathData="M25,45 Q35,40 45,45 Q55,50 65,45"
+        android:strokeWidth="1.5"
+        android:strokeColor="#0080FF" />
+
+    <path
+        android:fillColor="#0080FF"
+        android:fillAlpha="0.2"
+        android:pathData="M25,50 Q35,45 45,50 Q55,55 65,50"
+        android:strokeWidth="1.5"
+        android:strokeColor="#0080FF" />
+
+    <!-- Red Card (Front) -->
+    <path
+        android:fillColor="#FF0000"
+        android:pathData="M35,40 L80,40 Q85,40 85,45 L85,70 Q85,75 80,75 L35,75 Q30,75 30,70 L30,45 Q30,40 35,40 Z" />
+
+    <!-- VN Text -->
+    <group android:translateY="80">
+        <!-- V -->
+        <path
+            android:fillColor="#FF0000"
+            android:pathData="M20,5 L25,5 L30,15 L35,5 L40,5 L32,20 L28,20 Z" />
+
+        <!-- N -->
+        <path
+            android:fillColor="#FF0000"
+            android:pathData="M42,5 L46,5 L46,20 L42,20 L42,5 Z" />
+
+        <path
+            android:fillColor="#FF0000"
+            android:pathData="M46,5 L50,5 L50,20 L46,20 L46,5 Z" />
+
+        <path
+            android:fillColor="#FF0000"
+            android:pathData="M42,5 L50,20 L46,20 L42,12 Z" />
+    </group>
+
+    <!-- PAY Text -->
+    <group android:translateY="80">
+        <!-- P -->
+        <path
+            android:fillColor="#0066CC"
+            android:pathData="M52,5 L56,5 L56,20 L52,20 L52,5 Z" />
+
+        <path
+            android:fillColor="#0066CC"
+            android:pathData="M52,5 L60,5 Q62,5 62,7 L62,10 Q62,12 60,12 L52,12" />
+
+        <!-- A -->
+        <path
+            android:fillColor="#0066CC"
+            android:pathData="M64,20 L66,20 L67,17 L71,17 L72,20 L74,20 L69,5 L65,5 Z" />
+
+        <path
+            android:fillColor="#0066CC"
+            android:pathData="M68,14 L70,14 L69,11 Z" />
+
+        <!-- Y -->
+        <path
+            android:fillColor="#0066CC"
+            android:pathData="M76,5 L78,5 L80,12 L82,5 L84,5 L81,15 L81,20 L79,20 L79,15 Z" />
+    </group>
+
+    <!-- Small CA superscript -->
+    <group android:translateY="75" android:scaleX="0.6" android:scaleY="0.6">
+        <path
+            android:fillColor="#0066CC"
+            android:pathData="M86,5 Q88,5 88,7 Q88,9 86,9 L84,9 Q82,9 82,7 Q82,5 84,5 Z" />
+
+        <path
+            android:fillColor="#0066CC"
+            android:pathData="M90,5 L92,5 L93,9 L90,9 L90,7 L92,7 L90,5 Z" />
+    </group>
+
+</vector>
