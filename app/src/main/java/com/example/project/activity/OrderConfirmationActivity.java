@@ -1,6 +1,7 @@
 package com.example.project.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +18,9 @@ import com.example.project.adapter.OrderItemAdapter;
 import com.example.project.model.CartItem;
 import com.example.project.model.Order;
 import com.example.project.model.Product;
+import com.example.project.model.User;
+import com.example.project.service.OrderService;
+import com.example.project.service.UserService;
 import com.google.android.material.button.MaterialButton;
 
 import java.text.NumberFormat;
@@ -26,6 +30,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class OrderConfirmationActivity extends AppCompatActivity {
 
@@ -43,10 +53,26 @@ public class OrderConfirmationActivity extends AppCompatActivity {
 
     // Data
     private Order order;
+    private User user;
     private OrderItemAdapter orderItemAdapter;
     private NumberFormat currencyFormat;
     private SimpleDateFormat dateFormat;
     private String paymentOrderId; // For deep link payment result
+
+    // API Services
+    private OrderService orderService;
+    private UserService userService;
+    private Retrofit retrofit;
+
+    // Constants
+    private static final String BASE_URL = "https://web-production-b71f7.up.railway.app/";
+    private static final String TAG = "OrderConfirmation";
+
+    // SharedPreferences constants (matching UserProfileActivity)
+    private static final String PREF_NAME = "user_prefs";
+    private static final String SESSION_PREF_NAME = "user_session";
+    private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,11 +81,10 @@ public class OrderConfirmationActivity extends AppCompatActivity {
 
         initViews();
         setupFormatters();
+        setupRetrofit();
         handleDeepLink(); // Handle deep link first
         loadOrderData();
         setupClickListeners();
-        setupRecyclerView();
-        displayOrderInformation();
     }
 
     private void initViews() {
@@ -80,6 +105,32 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", new Locale("vi", "VN"));
     }
 
+    private void setupRetrofit() {
+        retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        orderService = retrofit.create(OrderService.class);
+        userService = retrofit.create(UserService.class);
+    }
+
+    /**
+     * Get user ID from SharedPreferences (matching UserProfileActivity structure)
+     * @return userId if found, -1 if not found or not logged in
+     */
+    private int getUserIdFromSharedPreferences() {
+        SharedPreferences sessionPrefs = getSharedPreferences(SESSION_PREF_NAME, MODE_PRIVATE);
+        boolean isLoggedIn = sessionPrefs.getBoolean(KEY_IS_LOGGED_IN, false);
+
+        if (!isLoggedIn) {
+            return -1; // User not logged in
+        }
+
+        SharedPreferences userPrefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        return userPrefs.getInt(KEY_USER_ID, -1);
+    }
+
     private void handleDeepLink() {
         Intent intent = getIntent();
         Uri data = intent.getData();
@@ -88,7 +139,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             String host = data.getHost();
             String path = data.getPath();
 
-            Log.d("OrderConfirmation", "Deep link received: " + data.toString());
+            Log.d(TAG, "Deep link received: " + data.toString());
 
             if ("payment-result".equals(host) && "/success".equals(path)) {
                 paymentOrderId = data.getQueryParameter("orderId");
@@ -96,7 +147,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
                 // Show success message
                 Toast.makeText(this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
 
-                Log.d("OrderConfirmation", "Payment successful for order: " + paymentOrderId);
+                Log.d(TAG, "Payment successful for order: " + paymentOrderId);
 
                 // You can also get other payment parameters if needed
                 // String vnpAmount = data.getQueryParameter("vnp_Amount");
@@ -105,59 +156,213 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         }
     }
 
-    private void loadOrderData() {
-        // Get order data from intent
-        Intent intent = getIntent();
-        if (intent != null) {
-            // Check if this is from payment deep link
-            if (paymentOrderId != null) {
-                // Load order data based on payment order ID
-                order = loadOrderByPaymentId(paymentOrderId);
-            } else {
-                // Normal flow from cart/billing activity
-                double totalAmount = intent.getDoubleExtra("total", 0.0);
-                ArrayList<CartItem> cartItems = (ArrayList<CartItem>) intent.getSerializableExtra("cartItems");
-                String paymentMethod = intent.getStringExtra("paymentMethod");
-                String deliveryAddress = intent.getStringExtra("deliveryAddress");
+    private void loadOrderFromApi(int orderId) {
+        Call<Order> call = orderService.getOrderById(orderId);
+        call.enqueue(new Callback<Order>() {
+            @Override
+            public void onResponse(Call<Order> call, Response<Order> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    order = response.body();
+                    Log.d(TAG, "Order loaded successfully: " + order.getOrderId());
 
-                if (cartItems != null) {
-                    order = createOrderFromCart(cartItems, totalAmount, paymentMethod, deliveryAddress);
+                    setupRecyclerView();
+                    displayOrderInformation();
                 } else {
-                    // Create sample order for demonstration
-                    order = createSampleOrder();
+                    Log.e(TAG, "Failed to load order: " + response.code());
+                    Toast.makeText(OrderConfirmationActivity.this,
+                            "Không thể tải thông tin đơn hàng", Toast.LENGTH_SHORT).show();
+                    finish(); // Close activity instead of showing sample
                 }
             }
+
+            @Override
+            public void onFailure(Call<Order> call, Throwable t) {
+                Log.e(TAG, "API call failed: " + t.getMessage());
+                Toast.makeText(OrderConfirmationActivity.this,
+                        "Lỗi kết nối. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+                finish(); // Close activity instead of showing sample
+            }
+        });
+    }
+
+    private void loadUserFromApi(int userId) {
+        if (userId == -1) {
+            Log.w(TAG, "Invalid user ID, cannot load user data");
+            // Set default delivery address
+            if (order != null && tvDeliveryAddress != null) {
+                tvDeliveryAddress.setText("Chưa cung cấp địa chỉ giao hàng");
+            }
+            return;
+        }
+
+        Call<User> call = userService.getUserById(userId);
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    user = response.body();
+                    Log.d(TAG, "User loaded successfully: " + user.getUsername());
+
+                    // Update delivery address with user information
+                    updateDeliveryAddressWithUserInfo();
+                } else {
+                    Log.e(TAG, "Failed to load user: " + response.code());
+                    // Set fallback delivery address
+                    if (order != null && tvDeliveryAddress != null) {
+                        tvDeliveryAddress.setText("Chưa cung cấp địa chỉ giao hàng");
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e(TAG, "User API call failed: " + t.getMessage());
+                // Set fallback delivery address
+                if (order != null && tvDeliveryAddress != null) {
+                    tvDeliveryAddress.setText("Lỗi tải thông tin giao hàng");
+                }
+            }
+        });
+    }
+
+    private void updateDeliveryAddressWithUserInfo() {
+        if (user != null) {
+            // Format delivery address with user information from API
+            StringBuilder addressBuilder = new StringBuilder();
+
+            // Add username
+            if (user.getUsername() != null && !user.getUsername().trim().isEmpty()) {
+                addressBuilder.append("Tên: ").append(user.getUsername()).append("\n");
+            }
+
+            // Add phone number
+            if (user.getPhoneNumber() != null && !user.getPhoneNumber().trim().isEmpty()) {
+                addressBuilder.append("SĐT: ").append(user.getPhoneNumber()).append("\n");
+            }
+
+            // Add address
+            if (user.getAddress() != null && !user.getAddress().trim().isEmpty()) {
+                addressBuilder.append("Địa chỉ: ").append(user.getAddress());
+            } else {
+                addressBuilder.append("Địa chỉ: Chưa cung cấp");
+            }
+
+            String formattedAddress = addressBuilder.toString();
+
+            // Update the order object if it exists
+            if (order != null) {
+                order.setDeliveryAddress(formattedAddress);
+            }
+
+            // Update the display immediately
+            runOnUiThread(() -> {
+                if (tvDeliveryAddress != null) {
+                    tvDeliveryAddress.setText(formattedAddress);
+                }
+            });
         } else {
-            // Create sample order for demonstration
-            order = createSampleOrder();
+            // No user data available
+            runOnUiThread(() -> {
+                if (tvDeliveryAddress != null) {
+                    tvDeliveryAddress.setText("Chưa cung cấp địa chỉ giao hàng");
+                }
+            });
         }
     }
 
-    private Order loadOrderByPaymentId(String paymentOrderId) {
-        // In a real app, you would load the order from database using the payment order ID
-        // For now, create a sample order with the payment order ID
-        Order order = new Order();
-        order.setOrderId(paymentOrderId); // Use the payment order ID
-        order.setOrderDate(new Date());
-        order.setTotalAmount(1230000.0); // You should get this from your database
-        order.setPaymentMethod("VNPay"); // Payment was successful via VNPay
-        order.setDeliveryAddress(getDefaultAddress());
-        order.setEstimatedDelivery("5-7 ngày làm việc");
-        order.setOrderItems(createSampleOrderItems());
-        order.setStatus("Đã thanh toán"); // Status updated to paid
+    private void loadOrderByPaymentId(String paymentOrderId) {
+        // Try to parse the payment order ID to get the actual order ID
+        try {
+            int orderId = Integer.parseInt(paymentOrderId);
+            loadOrderFromApi(orderId);
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Cannot parse payment order ID: " + paymentOrderId);
+            Toast.makeText(this, "Không thể tải thông tin đơn hàng", Toast.LENGTH_SHORT).show();
+            finish(); // Close activity instead of showing sample
+        }
+    }
 
-        return order;
+    private void loadOrderData() {
+        Intent intent = getIntent();
+
+        // Load current user from SharedPreferences
+        int currentUserId = getUserIdFromSharedPreferences();
+
+        if (currentUserId != -1) {
+            loadUserFromApi(currentUserId);
+        } else {
+            Log.w(TAG, "User not logged in or user ID not found");
+            if (tvDeliveryAddress != null) {
+                tvDeliveryAddress.setText("Vui lòng đăng nhập để xem thông tin giao hàng");
+            }
+        }
+
+        if (intent != null) {
+            // Check if this is from payment deep link
+            if (paymentOrderId != null) {
+                loadOrderByPaymentId(paymentOrderId);
+            } else {
+                // Check if order ID is provided
+                int orderId = intent.getIntExtra("orderId", -1);
+                int userId = intent.getIntExtra("userId", -1);
+
+                if (orderId != -1) {
+                    loadOrderFromApi(orderId);
+                    if (userId != -1 && userId != currentUserId) {
+                        loadUserFromApi(userId);
+                    }
+                } else {
+                    // Normal flow from cart/billing activity
+                    double totalAmount = intent.getDoubleExtra("total", 0.0);
+                    ArrayList<CartItem> cartItems = (ArrayList<CartItem>) intent.getSerializableExtra("cartItems");
+                    String paymentMethod = intent.getStringExtra("paymentMethod");
+                    String deliveryAddress = intent.getStringExtra("deliveryAddress");
+
+                    // Add detailed logging
+                    Log.d(TAG, "Loading order from cart data");
+                    Log.d(TAG, "Total amount: " + totalAmount);
+                    Log.d(TAG, "Payment method: " + paymentMethod);
+
+                    if (cartItems != null) {
+                        Log.d(TAG, "Cart items count: " + cartItems.size());
+                        for (int i = 0; i < cartItems.size(); i++) {
+                            CartItem item = cartItems.get(i);
+                            Log.d(TAG, "Item " + i + ": " + item.getProduct().getProductName() +
+                                    " (Qty: " + item.getQuantity() + ", Price: " + item.getPrice() + ")");
+                        }
+
+                        order = createOrderFromCart(cartItems, totalAmount, paymentMethod, deliveryAddress);
+                        setupRecyclerView();
+                        displayOrderInformation();
+
+                        if (user != null) {
+                            updateDeliveryAddressWithUserInfo();
+                        }
+                    } else {
+                        Log.e(TAG, "Cart items is null!");
+                        Toast.makeText(this, "Không có dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }
+            }
+        } else {
+            Log.e(TAG, "Intent is null!");
+            Toast.makeText(this, "Không có dữ liệu đơn hàng", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 
     private void setupClickListeners() {
         btnBack.setOnClickListener(v -> finish());
 
-//        btnTrackOrder.setOnClickListener(v -> {
-//            // Navigate to order tracking activity
-//            Intent intent = new Intent(this, OrderTrackingActivity.class);
-//            intent.putExtra("orderId", order.getOrderId());
-//            startActivity(intent);
-//        });
+        btnTrackOrder.setOnClickListener(v -> {
+//            if (order != null) {
+//                // Navigate to order tracking activity
+//                Intent intent = new Intent(this, OrderTrackingActivity.class);
+//                intent.putExtra("orderId", order.getOrderId());
+//                startActivity(intent);
+//            }
+        });
 
         btnContinueShopping.setOnClickListener(v -> {
             // Navigate back to main activity and clear back stack
@@ -169,19 +374,53 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        orderItemAdapter = new OrderItemAdapter(order.getOrderItems());
-        recyclerOrderItems.setLayoutManager(new LinearLayoutManager(this));
-        recyclerOrderItems.setAdapter(orderItemAdapter);
+        if (order != null && order.getOrderItems() != null) {
+            Log.d(TAG, "Setting up RecyclerView with " + order.getOrderItems().size() + " items");
+
+            // Create adapter
+            orderItemAdapter = new OrderItemAdapter(order.getOrderItems());
+
+            // Create LinearLayoutManager and disable nested scrolling
+            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+            layoutManager.setAutoMeasureEnabled(true);
+
+            // Setup RecyclerView
+            recyclerOrderItems.setLayoutManager(layoutManager);
+            recyclerOrderItems.setAdapter(orderItemAdapter);
+            recyclerOrderItems.setNestedScrollingEnabled(false);
+            recyclerOrderItems.setHasFixedSize(false);
+
+            // Force RecyclerView to measure all items
+            recyclerOrderItems.post(() -> {
+                if (orderItemAdapter != null) {
+                    orderItemAdapter.notifyDataSetChanged();
+                }
+
+                // Debug info
+                Log.d(TAG, "RecyclerView height: " + recyclerOrderItems.getHeight());
+                Log.d(TAG, "RecyclerView child count: " + recyclerOrderItems.getChildCount());
+                Log.d(TAG, "Adapter item count: " + orderItemAdapter.getItemCount());
+            });
+
+        } else {
+            Log.e(TAG, "Order or orderItems is null");
+        }
     }
 
     private void displayOrderInformation() {
-        // Display order information
-        tvOrderId.setText("#" + order.getOrderId());
-        tvOrderDate.setText(dateFormat.format(order.getOrderDate()));
-        tvPaymentMethod.setText(order.getPaymentMethod());
-        tvTotalAmount.setText(formatPrice(order.getTotalAmount()));
-        tvDeliveryAddress.setText(order.getDeliveryAddress());
-        tvEstimatedDelivery.setText(order.getEstimatedDelivery());
+        if (order != null) {
+            // Display order information
+            tvOrderId.setText("#" + order.getOrderId());
+            tvOrderDate.setText(dateFormat.format(order.getOrderDate()));
+            tvPaymentMethod.setText(order.getPaymentMethod());
+            tvTotalAmount.setText(formatPrice(order.getTotalAmount()));
+            tvEstimatedDelivery.setText(order.getEstimatedDelivery());
+
+            // Only set delivery address if user info hasn't been loaded yet
+            if (user == null && order.getDeliveryAddress() != null) {
+                tvDeliveryAddress.setText(order.getDeliveryAddress());
+            }
+        }
     }
 
     private Order createOrderFromCart(List<CartItem> cartItems, double totalAmount,
@@ -191,23 +430,12 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         order.setOrderDate(new Date());
         order.setTotalAmount(totalAmount);
         order.setPaymentMethod(paymentMethod != null ? paymentMethod : "Thanh toán khi nhận hàng");
-        order.setDeliveryAddress(deliveryAddress != null ? deliveryAddress : getDefaultAddress());
+
+        // Set delivery address - will be updated by updateDeliveryAddressWithUserInfo() if user data is available
+        order.setDeliveryAddress(deliveryAddress != null ? deliveryAddress : "Đang tải thông tin giao hàng...");
+
         order.setEstimatedDelivery("5-7 ngày làm việc");
         order.setOrderItems(cartItems);
-        order.setStatus("Đang xử lý");
-
-        return order;
-    }
-
-    private Order createSampleOrder() {
-        Order order = new Order();
-        order.setOrderId(generateOrderId());
-        order.setOrderDate(new Date());
-        order.setTotalAmount(1230000.0);
-        order.setPaymentMethod("Thanh toán khi nhận hàng");
-        order.setDeliveryAddress(getDefaultAddress());
-        order.setEstimatedDelivery("5-7 ngày làm việc");
-        order.setOrderItems(createSampleOrderItems());
         order.setStatus("Đang xử lý");
 
         return order;
@@ -219,29 +447,6 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         String datePart = sdf.format(new Date());
         int randomPart = new Random().nextInt(1000);
         return "TRH" + datePart + String.format("%03d", randomPart);
-    }
-
-    private String getDefaultAddress() {
-        return "Nguyễn Văn A\n123 Nguyễn Thị Minh Khai, Quận 1\nTP. Hồ Chí Minh\n0901234567";
-    }
-
-    private List<CartItem> createSampleOrderItems() {
-        List<CartItem> items = new ArrayList<>();
-
-        // Create sample order items (same as cart items)
-        items.add(new CartItem(
-                new Product(1, "Tranh Trừu Tượng Nghệ Thuật", "Mô tả ngắn", "Chi tiết", "60x40cm",
-                        599000, "https://example.com/tranh1.jpg", "Trừu tượng"), 2));
-
-        items.add(new CartItem(
-                new Product(2, "Phong Cảnh Thiên Nhiên", "Mô tả ngắn", "Chi tiết", "50x50cm",
-                        450000, "https://example.com/tranh2.jpg", "Phong cảnh"), 1));
-
-        items.add(new CartItem(
-                new Product(3, "Tranh Hiện Đại Minimalist", "Mô tả ngắn", "Chi tiết", "70x50cm",
-                        350000, "https://example.com/tranh3.jpg", "Hiện đại"), 1));
-
-        return items;
     }
 
     private String formatPrice(double price) {
