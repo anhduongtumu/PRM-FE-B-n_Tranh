@@ -1,5 +1,6 @@
 package com.example.project.service;
 
+import com.example.project.dto.order.CashResponseDto;
 import com.example.project.dto.order.VNPayResponseDTO;
 import com.example.project.model.Order;
 import com.example.project.dto.order.CreateOrderDto;
@@ -21,7 +22,7 @@ public interface OrderService {
     Call<List<Order>> getAllOrders();
 
     @POST("/api/orders/checkout/CashOnDelivery")
-    Call<VNPayResponseDTO> checkoutCOD(@Body BillingDTO dto);
+    Call<CashResponseDto> checkoutCOD(@Body BillingDTO dto);
 
     @POST("/api/orders/checkout/VNPay")
     Call<VNPayResponseDTO> checkoutVNPay(@Body BillingDTO dto);

@@ -2,12 +2,15 @@
 package com.example.project.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Cart implements Serializable {
     private int id;
     private int userID;
     private double totalPrice;
     private String status;
+
+    private List<CartItem> cartItems;
 
     public Cart() {}
 
@@ -22,4 +25,11 @@ public class Cart implements Serializable {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public List<CartItem> getCartItems() {
+        return cartItems;
+    }
+
+    public void setCartItems(List<CartItem> cartItems) {
+        this.cartItems = cartItems;
+    }
 }

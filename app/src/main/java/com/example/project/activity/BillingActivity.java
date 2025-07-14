@@ -16,6 +16,7 @@ import androidx.cardview.widget.CardView;
 import com.example.project.R;
 import com.example.project.dto.auth.LoginResponse;
 import com.example.project.dto.order.BillingDTO;
+import com.example.project.dto.order.CashResponseDto;
 import com.example.project.dto.order.VNPayResponseDTO;
 import com.example.project.model.CartItem;
 import com.example.project.network.ApiClient;
@@ -221,20 +222,13 @@ public class BillingActivity extends AppCompatActivity {
         });
     }
 
-    private void proceedToOrderConfirmation() {
+    private void proceedToOrderConfirmation(int orderId) {
         try {
             Intent intent = new Intent(this, OrderConfirmationActivity.class);
 
-            // Pass order data
+            // Pass orderId để OrderConfirmationActivity load từ API
             intent.putExtra("orderId", orderId);
-            intent.putExtra("total", total);
-            intent.putExtra("subtotal", subtotal);
-            intent.putExtra("shipping", shipping);
-            intent.putExtra("discount", discount);
-            intent.putExtra("cartItems", (Serializable) new ArrayList<>(cartItems));
-            intent.putExtra("paymentMethod", paymentMethod.equals("vnpay") ? "VNPay" : "Thanh toán khi nhận hàng");
-            intent.putExtra("deliveryAddress", deliveryAddress);
-            intent.putExtra("paymentStatus", paymentMethod.equals("vnpay") ? "paid" : "pending");
+            intent.putExtra("userId", currentUserId);
 
             startActivity(intent);
             finish();
@@ -243,7 +237,6 @@ public class BillingActivity extends AppCompatActivity {
             Toast.makeText(this, "Có lỗi xảy ra. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
 
-            // Reset button state
             btnConfirmPayment.setEnabled(true);
             btnConfirmPayment.setText(paymentMethod.equals("vnpay") ? "Thanh Toán VNPay" : "Đặt Hàng");
         }
@@ -258,29 +251,30 @@ public class BillingActivity extends AppCompatActivity {
         BillingDTO billingDTO = new BillingDTO(currentUserId, cartId, deliveryAddress);
 
         OrderService orderService = ApiClient.getClient(this).create(OrderService.class);
-        orderService.checkoutCOD(billingDTO).enqueue(new Callback<VNPayResponseDTO>() {
+        orderService.checkoutCOD(billingDTO).enqueue(new Callback<CashResponseDto>() {
             @Override
-            public void onResponse(Call<VNPayResponseDTO> call, Response<VNPayResponseDTO> response) {
+            public void onResponse(Call<CashResponseDto> call, Response<CashResponseDto> response) {
                 btnConfirmPayment.setEnabled(true);
                 btnConfirmPayment.setText("Đặt Hàng");
 
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    int orderId = response.body().getOrderId();
+
                     Toast.makeText(BillingActivity.this, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show();
-                    proceedToOrderConfirmation();  // chuyển sang trang xác nhận đơn
+                    proceedToOrderConfirmation(orderId);  // truyền orderId
                 } else {
                     Toast.makeText(BillingActivity.this, "Không thể tạo đơn hàng. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<VNPayResponseDTO> call, Throwable t) {
+            public void onFailure(Call<CashResponseDto> call, Throwable t) {
                 Toast.makeText(BillingActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
                 btnConfirmPayment.setEnabled(true);
                 btnConfirmPayment.setText("Đặt Hàng");
             }
         });
     }
-
 
     @Override
     public void onBackPressed() {
