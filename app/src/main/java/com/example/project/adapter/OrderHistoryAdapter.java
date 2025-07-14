@@ -1,6 +1,7 @@
 package com.example.project.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.project.R;
+import com.example.project.activity.OrderConfirmationActivity;
 import com.example.project.model.Order;
 
 import java.text.SimpleDateFormat;
@@ -34,10 +36,16 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
     @Override
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
         Order order = orders.get(position);
-        holder.tvOrderId.setText("#" + order.getOrderId());
-        holder.tvOrderDate.setText(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(order.getOrderDate()));
-        holder.tvStatus.setText(order.getStatus());
-        holder.tvTotalAmount.setText(String.format(Locale.getDefault(), "%,.0fđ", order.getTotalAmount()));
+        holder.tvOrderId.setText("Mã đơn: #" + order.getId());
+        holder.tvOrderDate.setText("Ngày đặt: " + new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(order.getOrderDate()));
+        holder.tvStatus.setText("Trạng thái: " + order.getOrderStatus());
+        holder.tvTotalAmount.setText("Tổng tiền: " + String.format(Locale.getDefault(), "%,.0fđ", order.getTotal()));
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, OrderConfirmationActivity.class);
+            intent.putExtra("orderId", order.getId());
+            context.startActivity(intent);
+        });
     }
 
     @Override
@@ -57,3 +65,4 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         }
     }
 }
+

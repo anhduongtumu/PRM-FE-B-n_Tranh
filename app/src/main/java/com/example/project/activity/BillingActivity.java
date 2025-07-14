@@ -129,7 +129,7 @@ public class BillingActivity extends AppCompatActivity {
                 processVnpayPayment();
             } else {
                 // Cash on delivery - proceed directly
-                proceedToOrderConfirmation();
+                processCashOnDelivery();
             }
         });
 
@@ -219,31 +219,6 @@ public class BillingActivity extends AppCompatActivity {
                 Toast.makeText(BillingActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
-
-
-        // Simulate VNPay payment processing
-//        btnConfirmPayment.postDelayed(() -> {
-//            // In a real implementation, you would:
-//            // 1. Generate VNPay payment URL with proper parameters
-//            // 2. Open VNPay payment gateway in WebView or Browser
-//            // 3. Handle payment callback
-//
-//            // For simulation, let's assume payment is successful
-//            simulateVnpayPayment();
-//        }, 1500);
-    }
-
-    private void simulateVnpayPayment() {
-        // Simulate VNPay payment result (90% success rate)
-        Random random = new Random();
-        if (random.nextInt(10) < 9) {
-            Toast.makeText(this, "Thanh toán VNPay thành công!", Toast.LENGTH_SHORT).show();
-            proceedToOrderConfirmation();
-        } else {
-            Toast.makeText(this, "Thanh toán VNPay thất bại. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
-            btnConfirmPayment.setEnabled(true);
-            btnConfirmPayment.setText("Thanh Toán VNPay");
-        }
     }
 
     private void proceedToOrderConfirmation() {
@@ -274,6 +249,37 @@ public class BillingActivity extends AppCompatActivity {
         }
     }
 
+    private void processCashOnDelivery() {
+        btnConfirmPayment.setEnabled(false);
+        btnConfirmPayment.setText("Đang xử lý...");
+
+        int cartId = cartItems.get(0).getCartID();  // Giả định tất cả sản phẩm trong 1 cart
+
+        BillingDTO billingDTO = new BillingDTO(currentUserId, cartId, deliveryAddress);
+
+        OrderService orderService = ApiClient.getClient(this).create(OrderService.class);
+        orderService.checkoutCOD(billingDTO).enqueue(new Callback<VNPayResponseDTO>() {
+            @Override
+            public void onResponse(Call<VNPayResponseDTO> call, Response<VNPayResponseDTO> response) {
+                btnConfirmPayment.setEnabled(true);
+                btnConfirmPayment.setText("Đặt Hàng");
+
+                if (response.isSuccessful() && response.body() != null) {
+                    Toast.makeText(BillingActivity.this, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show();
+                    proceedToOrderConfirmation();  // chuyển sang trang xác nhận đơn
+                } else {
+                    Toast.makeText(BillingActivity.this, "Không thể tạo đơn hàng. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<VNPayResponseDTO> call, Throwable t) {
+                Toast.makeText(BillingActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                btnConfirmPayment.setEnabled(true);
+                btnConfirmPayment.setText("Đặt Hàng");
+            }
+        });
+    }
 
 
     @Override
