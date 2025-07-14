@@ -168,7 +168,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             public void onResponse(Call<Order> call, Response<Order> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     order = response.body();
-                    Log.d(TAG, "Order loaded successfully: " + order.getOrderId());
+                    Log.d(TAG, "Order loaded successfully: " + order.getId());
 
                     setupRecyclerView();
                     displayOrderInformation();
@@ -256,7 +256,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
 
             // Update the order object if it exists
             if (order != null) {
-                order.setDeliveryAddress(formattedAddress);
+                order.setBillingAddress(user.getAddress());
             }
 
             // Update the display immediately
@@ -318,7 +318,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
                     }
                 } else {
                     // Normal flow from cart/billing activity
-                    double totalAmount = intent.getDoubleExtra("total", 0.0);
+                    int totalAmount = intent.getIntExtra("total", 0);
                     ArrayList<CartItem> cartItems = (ArrayList<CartItem>) intent.getSerializableExtra("cartItems");
                     String paymentMethod = intent.getStringExtra("paymentMethod");
                     String deliveryAddress = intent.getStringExtra("deliveryAddress");
@@ -415,15 +415,15 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     private void displayOrderInformation() {
         if (order != null) {
             // Display order information
-            tvOrderId.setText("#" + order.getOrderId());
+            tvOrderId.setText("#" + order.getId());
             tvOrderDate.setText(dateFormat.format(order.getOrderDate()));
             tvPaymentMethod.setText(order.getPaymentMethod());
-            tvTotalAmount.setText(formatPrice(order.getTotalAmount()));
-            tvEstimatedDelivery.setText(order.getEstimatedDelivery());
+            tvTotalAmount.setText(formatPrice(order.getTotal()));
+            tvEstimatedDelivery.setText("5-7 ngày làm việc");
 
             // Only set delivery address if user info hasn't been loaded yet
-            if (user == null && order.getDeliveryAddress() != null) {
-                tvDeliveryAddress.setText(order.getDeliveryAddress());
+            if (user == null && order.getBillingAddress() != null) {
+                tvDeliveryAddress.setText(order.getBillingAddress());
             }
         }
     }
@@ -431,17 +431,16 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     private Order createOrderFromCart(List<CartItem> cartItems, double totalAmount,
                                       String paymentMethod, String deliveryAddress) {
         Order order = new Order();
-        order.setOrderId(generateOrderId());
+        order.setId(order.getId());
         order.setOrderDate(new Date());
-        order.setTotalAmount(totalAmount);
+        order.setTotal(totalAmount);
         order.setPaymentMethod(paymentMethod != null ? paymentMethod : "Thanh toán khi nhận hàng");
 
         // Set delivery address - will be updated by updateDeliveryAddressWithUserInfo() if user data is available
-        order.setDeliveryAddress(deliveryAddress != null ? deliveryAddress : "Đang tải thông tin giao hàng...");
+        order.setBillingAddress(deliveryAddress != null ? deliveryAddress : "Đang tải thông tin giao hàng...");
 
-        order.setEstimatedDelivery("5-7 ngày làm việc");
-        order.setOrderItems(cartItems);
-        order.setStatus("Đang xử lý");
+//        order.setOrderItems(cartItems);
+        order.setOrderStatus("Đang xử lý");
 
         return order;
     }

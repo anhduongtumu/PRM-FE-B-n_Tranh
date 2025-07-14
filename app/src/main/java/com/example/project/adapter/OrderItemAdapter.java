@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.project.R;
 import com.example.project.model.CartItem;
+import com.example.project.model.OrderItem;
 import com.example.project.model.Product;
 
 import java.text.NumberFormat;
@@ -20,10 +21,10 @@ import java.util.Locale;
 
 public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.OrderItemViewHolder> {
 
-    private List<CartItem> orderItems;
+    private List<OrderItem> orderItems;
     private NumberFormat currencyFormat;
 
-    public OrderItemAdapter(List<CartItem> orderItems) {
+    public OrderItemAdapter(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
         this.currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
     }
@@ -38,7 +39,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
 
     @Override
     public void onBindViewHolder(@NonNull OrderItemViewHolder holder, int position) {
-        CartItem item = orderItems.get(position);
+        OrderItem item = orderItems.get(position);
         holder.bind(item);
     }
 
@@ -47,7 +48,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
         return orderItems != null ? orderItems.size() : 0;
     }
 
-    public void updateItems(List<CartItem> newItems) {
+    public void updateItems(List<OrderItem> newItems) {
         this.orderItems = newItems;
         notifyDataSetChanged();
     }
@@ -68,7 +69,7 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
             tvItemTotal = itemView.findViewById(R.id.tvItemTotal);
         }
 
-        public void bind(CartItem item) {
+        public void bind(OrderItem item) {
             Product product = item.getProduct();
 
             // Load image from URL using Glide
