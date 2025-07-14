@@ -5,40 +5,39 @@ import java.util.Date;
 import java.util.List;
 
 public class Order implements Serializable {
-    private String orderId;
+    private int id; // Backend uses numeric ID
+    private int userID; // Missing in your model
     private Date orderDate;
-    private double totalAmount;
+    private Double total; // Use Double to accept null
     private String paymentMethod;
-    private String deliveryAddress;
-    private String estimatedDelivery;
-    private List<CartItem> orderItems;
-    private String status;
-    private String trackingNumber;
-    private Date deliveredDate;
+    private String billingAddress;
+    private String orderStatus; // Rename to match backend
+    private Date createdAt;
+    private Date updatedAt;
+
+    private List<OrderItem> OrderItems; // Assuming CartItem maps to OrderItem from backend
 
     // Constructors
     public Order() {
     }
 
-    public Order(String orderId, Date orderDate, double totalAmount, String paymentMethod,
-                 String deliveryAddress, String estimatedDelivery, List<CartItem> orderItems, String status) {
-        this.orderId = orderId;
-        this.orderDate = orderDate;
-        this.totalAmount = totalAmount;
-        this.paymentMethod = paymentMethod;
-        this.deliveryAddress = deliveryAddress;
-        this.estimatedDelivery = estimatedDelivery;
-        this.orderItems = orderItems;
-        this.status = status;
-    }
+    // Add constructor as needed
 
     // Getters and Setters
-    public String getOrderId() {
-        return orderId;
+    public int getId() {
+        return id;
     }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getUserID() {
+        return userID;
+    }
+
+    public void setUserID(int userID) {
+        this.userID = userID;
     }
 
     public Date getOrderDate() {
@@ -49,12 +48,12 @@ public class Order implements Serializable {
         this.orderDate = orderDate;
     }
 
-    public double getTotalAmount() {
-        return totalAmount;
+    public Double getTotal() {
+        return total;
     }
 
-    public void setTotalAmount(double totalAmount) {
-        this.totalAmount = totalAmount;
+    public void setTotal(Double total) {
+        this.total = total;
     }
 
     public String getPaymentMethod() {
@@ -65,59 +64,50 @@ public class Order implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
-    public String getDeliveryAddress() {
-        return deliveryAddress;
+    public String getBillingAddress() {
+        return billingAddress;
     }
 
-    public void setDeliveryAddress(String deliveryAddress) {
-        this.deliveryAddress = deliveryAddress;
+    public void setBillingAddress(String billingAddress) {
+        this.billingAddress = billingAddress;
     }
 
-    public String getEstimatedDelivery() {
-        return estimatedDelivery;
+    public String getOrderStatus() {
+        return orderStatus;
     }
 
-    public void setEstimatedDelivery(String estimatedDelivery) {
-        this.estimatedDelivery = estimatedDelivery;
+    public void setOrderStatus(String orderStatus) {
+        this.orderStatus = orderStatus;
     }
 
-    public List<CartItem> getOrderItems() {
-        return orderItems;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setOrderItems(List<CartItem> orderItems) {
-        this.orderItems = orderItems;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getStatus() {
-        return status;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public String getTrackingNumber() {
-        return trackingNumber;
+    public List<OrderItem> getOrderItems() {
+        return OrderItems;
     }
 
-    public void setTrackingNumber(String trackingNumber) {
-        this.trackingNumber = trackingNumber;
+    public void setOrderItems(List<OrderItem> OrderItems) {
+        this.OrderItems = OrderItems;
     }
-
-    public Date getDeliveredDate() {
-        return deliveredDate;
-    }
-
-    public void setDeliveredDate(Date deliveredDate) {
-        this.deliveredDate = deliveredDate;
-    }
-
     // Helper methods
     public int getTotalItemCount() {
         int count = 0;
-        if (orderItems != null) {
-            for (CartItem item : orderItems) {
+        if (OrderItems != null) {
+            for (OrderItem item : OrderItems) {
                 count += item.getQuantity();
             }
         }
@@ -125,18 +115,18 @@ public class Order implements Serializable {
     }
 
     public boolean isDelivered() {
-        return "Đã giao".equals(status);
+        return "Đã giao".equals(orderStatus);
     }
 
     public boolean isCancelled() {
-        return "Đã hủy".equals(status);
+        return "Đã hủy".equals(orderStatus);
     }
 
     public boolean isProcessing() {
-        return "Đang xử lý".equals(status);
+        return "Đang xử lý".equals(orderStatus);
     }
 
     public boolean isShipping() {
-        return "Đang giao".equals(status);
+        return "Đang giao".equals(orderStatus);
     }
 }
