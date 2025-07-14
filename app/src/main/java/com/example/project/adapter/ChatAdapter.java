@@ -18,13 +18,13 @@ import java.util.Locale;
 
 public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolder> {
 
-    private final String currentUserId;
-    private final SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+    private final int currentUserId;
+    private final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy, h:mm a", Locale.getDefault());
 
     private static final int VIEW_TYPE_SENT = 1;
     private static final int VIEW_TYPE_RECEIVED = 2;
 
-    public ChatAdapter(String currentUserId) {
+    public ChatAdapter(int currentUserId) {
         super(new ChatMessageDiffCallback());
         this.currentUserId = currentUserId;
     }
@@ -32,7 +32,7 @@ public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolde
     @Override
     public int getItemViewType(int position) {
         ChatMessage message = getItem(position);
-        if (message.getSenderId().equals(currentUserId)) {
+        if (message.getSenderId().equals(String.valueOf(currentUserId))) {
             return VIEW_TYPE_SENT;
         } else {
             return VIEW_TYPE_RECEIVED;
@@ -57,15 +57,34 @@ public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolde
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ChatMessage message = getItem(position);
         Timestamp ts = message.getTimestamp();
-        String formattedTime = ts != null
-                ? sdf.format(ts.toDate())
-                : "N/A"; // or fallback: sdf.format(new Date())
+        String formattedTime = formatTimestamp(ts);
 
 
         if (holder.getItemViewType() == VIEW_TYPE_SENT) {
             ((SentMessageViewHolder) holder).bind(message, formattedTime);
         } else {
             ((ReceivedMessageViewHolder) holder).bind(message, formattedTime);
+        }
+    }
+
+    private String formatTimestamp(Timestamp ts) {
+        if (ts == null) return "N/A";
+
+        Date date = ts.toDate();
+        Date today = new Date();
+
+        SimpleDateFormat dayFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        String dateString = dayFormat.format(date);
+        String todayString = dayFormat.format(today);
+
+        if (dateString.equals(todayString)) {
+            // If today, show only time
+            SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a", Locale.getDefault());
+            return timeFormat.format(date);
+        } else {
+            // Else, show date + time
+            SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd/MM/yy, h:mm a", Locale.getDefault());
+            return dateTimeFormat.format(date);
         }
     }
 

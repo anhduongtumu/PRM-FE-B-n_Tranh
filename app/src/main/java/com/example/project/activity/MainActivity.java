@@ -1,5 +1,6 @@
 package com.example.project.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -43,6 +44,8 @@ import com.example.project.utils.TokenManager;
 import com.example.project.utils.UserManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -80,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String CART_PREFS = "cart_prefs";
     private static final String CART_COUNT_KEY = "cart_count";
 
+    private UserManager userManager;
+
     // Banner images array
     private int[] bannerImages = {
             R.drawable.tranh1,
@@ -103,6 +108,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 showPaymentError(message);
             }
         }
+
+        FirebaseApp.initializeApp(this);
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        String token = task.getResult();
+                        Log.d("FCM", "Token: " + token);
+                        // Save to Firestore under userId if logged in
+                    }
+                });
+
+        userManager = new UserManager(this);
 
         initViews();
         initCartPreferences();
@@ -154,25 +172,68 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         // Initialize cart badge
-        updateCartBadge();
+        updateCartBadge(this, tvCartBadge);
     }
 
-    private void updateCartBadge() {
-        int cartCount = cartPrefs.getInt(CART_COUNT_KEY, 0);
+    public static void updateCartBadge(Context context, TextView tvCartBadge) {
+        UserManager userManager = new UserManager(context);
+        int userId = userManager.getUser().getId();
 
-        if (cartCount > 0) {
-            tvCartBadge.setVisibility(View.VISIBLE);
-            tvCartBadge.setText(String.valueOf(cartCount));
-        } else {
-            tvCartBadge.setVisibility(View.GONE);
-        }
+        CartService cartService = ApiClient.getClient(context).create(CartService.class);
+        Call<Cart> call = cartService.getCartByUserId(userId);
+
+        call.enqueue(new Callback<Cart>() {
+            @Override
+            public void onResponse(Call<Cart> call, Response<Cart> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Cart cart = response.body();
+                    List<CartItem> items = cart.getCartItems();
+
+                    int totalQuantity = 0;
+                    if (items != null) {
+                        for (CartItem item : items) {
+                            totalQuantity += item.getQuantity();
+                        }
+                    }
+
+                    if (totalQuantity > 0) {
+                        tvCartBadge.setVisibility(View.VISIBLE);
+                        tvCartBadge.setText(String.valueOf(totalQuantity));
+                    } else {
+                        tvCartBadge.setVisibility(View.GONE);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<Cart> call, Throwable t) {
+                Log.e("CartManager", "Failed to get cart count", t);
+            }
+        });
     }
 
     private void setupChatHandler() {
         if (layoutChat != null) {
             layoutChat.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
-                startActivity(intent);
+                SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
+                boolean isLoggedIn = prefs.getBoolean("is_logged_in", false);
+
+                if (!isLoggedIn) {
+                    Toast.makeText(MainActivity.this, "Vui lòng tạo tài khoản trước", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    return;
+                }
+
+                // Check if user is admin
+                if (userManager.getUser().getRole().equals("admin")) {
+                    Intent intent = new Intent(MainActivity.this, AdminChatsActivity.class);
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                    startActivity(intent);
+                }
             });
         }
     }
@@ -229,14 +290,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     startActivity(new Intent(this, SearchActivity.class));
                     return true;
                 } else if (itemId == R.id.nav_notifications) {
-                    // Handle notifications click
                     // startActivity(new Intent(this, NotificationsActivity.class));
                     return true;
                 } else if (itemId == R.id.nav_account) {
-                    // Handle account click
                     startActivity(new Intent(this, UserProfileActivity.class));
                     return true;
+                } else if (itemId == R.id.nav_orders) {
+                    startActivity(new Intent(this, OrderHistoryActivity.class));
+                    return true;
                 }
+
                 return false;
             });
         }
@@ -414,6 +477,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     // Xóa token và trạng thái đăng nhập
                     TokenManager tokenManager = new TokenManager(MainActivity.this);
                     tokenManager.clearToken();
+                    userManager.clearUser();
 
                     SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
                     prefs.edit().clear().apply();

@@ -3,6 +3,7 @@ package com.example.project.activity; // Adjust package name
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.MenuItem; // Needed for handling Toolbar item clicks
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,8 +36,9 @@ public class ChatActivity extends AppCompatActivity {
     private ChatAdapter chatAdapter;
     private List<ChatMessage> messagesList = new ArrayList<>();
 
-    private String currentUserId;
-    private String otherUserId = "1"; // admin UID
+    private int currentUserId;
+    private String customerName;
+    private int otherUserId; // admin UID
     private String chatId;
 
     private UserManager userManager;
@@ -48,34 +50,46 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        // Initialize Toolbar
         toolbarChat = findViewById(R.id.toolbarChat);
-        setSupportActionBar(toolbarChat); // Set Toolbar as ActionBar
+        setSupportActionBar(toolbarChat);
 
-        // Enable the Up button (back arrow)
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
-            getSupportActionBar().setTitle("Chat"); // Set a title for the chat screen
+            getSupportActionBar().setTitle("Support Chat");
         }
 
         userManager = new UserManager(this);
-        currentUserId = String.valueOf(userManager.getUser().getId());
+        currentUserId = userManager.getUser().getId();
+        customerName = userManager.getUser().getUsername();
+
+        // Get otherUserId from intent (default to "1" if missing)
+        otherUserId = getIntent().getIntExtra("otherUserId", 1);
 
         recyclerViewChat = findViewById(R.id.recyclerViewChat);
         editTextMessage = findViewById(R.id.editTextMessage);
         buttonSend = findViewById(R.id.buttonSend);
 
         setupRecyclerView();
-        chatId = FirebaseUtil.generateChatId(currentUserId, otherUserId);
-//        loadInitialMessages();
-        FirebaseUtil.createChatIfNotExists(
-                chatId,
-                currentUserId,
-                otherUserId,
-                unused -> loadMessagesFromFirestore(),
-                e -> Toast.makeText(this, "Failed to create chat: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-        );
+        if (currentUserId != 1 ){
+            chatId = FirebaseUtil.generateChatId(
+                    String.valueOf(currentUserId),
+                    String.valueOf(otherUserId)
+            );
+
+            FirebaseUtil.createChatIfNotExists(
+                    chatId,
+                    String.valueOf(currentUserId),
+                    String.valueOf(otherUserId),
+                    customerName,
+                    unused -> loadMessagesFromFirestore(),
+                    e -> Toast.makeText(this, "Failed to create chat: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+            );
+        } else {
+            chatId = getIntent().getStringExtra("chatId");
+            loadMessagesFromFirestore();
+        }
+
 
         buttonSend.setOnClickListener(v -> sendMessage());
     }
@@ -107,8 +121,8 @@ public class ChatActivity extends AppCompatActivity {
         String messageText = editTextMessage.getText().toString().trim();
         if (!messageText.isEmpty()) {
             FirebaseUtil.sendMessage(
-                    currentUserId,
-                    otherUserId,
+                    String.valueOf(currentUserId),
+                    String.valueOf(otherUserId),
                     messageText,
                     unused -> editTextMessage.setText(""),
                     e -> Toast.makeText(this, "Failed to send: " + e.getMessage(), Toast.LENGTH_SHORT).show()

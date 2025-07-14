@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.google.gson.JsonObject;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -58,7 +59,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems = new ArrayList<>();
 
-    private double subtotal = 0.0, shipping = 30000.0, discount = 0.0, total = 0.0;
+    private double subtotal = 0.0, shipping = 0.0, discount = 0.0, total = 0.0;
     private NumberFormat currencyFormat;
 
     @Override
@@ -215,7 +216,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         for (CartItem item : cartItems) {
             subtotal += item.getTotalPrice();
         }
-        shipping = subtotal >= 1000000 ? 0.0 : 30000.0;
+        shipping = subtotal >= 1000000 ? 0.0 : 0.0;
         total = subtotal + shipping - discount;
     }
 
@@ -296,28 +297,34 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
 
     @Override
     public void onQuantityChanged(CartItem item, int newQuantity) {
-        UpdateCartItemDto dto = new UpdateCartItemDto();
-        dto.setQuantity(newQuantity);
-
-        if (item.getId() != 0) {
-            cartItemService.updateCartItem(item.getId(), dto).enqueue(new Callback<CartItem>() {
-                @Override
-                public void onResponse(Call<CartItem> call, Response<CartItem> response) {
-                    if (response.isSuccessful()) {
-                        item.setQuantity(newQuantity); // cập nhật local
-                        calculatePrices();
-                        updatePriceViews();
-                    } else {
-                        Toast.makeText(CartActivity.this, "Cập nhật số lượng thất bại", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<CartItem> call, Throwable t) {
-                    Toast.makeText(CartActivity.this, "Lỗi kết nối khi cập nhật số lượng", Toast.LENGTH_SHORT).show();
-                }
-            });
+        if (item.getProduct() == null || item.getProduct().getId() == 0) {
+            Toast.makeText(CartActivity.this, "Sản phẩm không hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        CartService cartService = ApiClient.getClient(CartActivity.this).create(CartService.class);
+
+        JsonObject body = new JsonObject();
+        body.addProperty("productId", item.getProduct().getId());
+        body.addProperty("quantity", newQuantity);
+
+        cartService.updateCartItem(userId, body).enqueue(new Callback<Cart>() {
+            @Override
+            public void onResponse(Call<Cart> call, Response<Cart> response) {
+                if (response.isSuccessful()) {
+                    item.setQuantity(newQuantity); // cập nhật local
+                    calculatePrices();
+                    updatePriceViews();
+                } else {
+                    Toast.makeText(CartActivity.this, "Cập nhật số lượng thất bại", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Cart> call, Throwable t) {
+                Toast.makeText(CartActivity.this, "Lỗi kết nối khi cập nhật số lượng", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

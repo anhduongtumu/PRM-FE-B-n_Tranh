@@ -204,16 +204,41 @@ public class CartManager {
         });
     }
 
-    public static void updateCartBadge(Context context, TextView badgeView) {
-        SharedPreferences prefs = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
-        int count = prefs.getInt(CART_COUNT_KEY, 0);
+    public static void updateCartBadge(Context context, TextView tvCartBadge) {
+        UserManager userManager = new UserManager(context);
+        int userId = userManager.getUser().getId();
 
-        if (count > 0) {
-            badgeView.setVisibility(View.VISIBLE);
-            badgeView.setText(String.valueOf(count));
-        } else {
-            badgeView.setVisibility(View.GONE);
-        }
+        CartService cartService = ApiClient.getClient(context).create(CartService.class);
+        Call<Cart> call = cartService.getCartByUserId(userId);
+
+        call.enqueue(new Callback<Cart>() {
+            @Override
+            public void onResponse(Call<Cart> call, Response<Cart> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Cart cart = response.body();
+                    List<CartItem> items = cart.getCartItems();
+                    int totalQuantity = 0;
+
+                    if (items != null) {
+                        for (CartItem item : items) {
+                            totalQuantity += item.getQuantity();
+                        }
+                    }
+
+                    if (totalQuantity > 0) {
+                        tvCartBadge.setVisibility(View.VISIBLE);
+                        tvCartBadge.setText(String.valueOf(totalQuantity));
+                    } else {
+                        tvCartBadge.setVisibility(View.GONE);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Cart> call, Throwable t) {
+                Log.e("CartManager", "Failed to get cart count", t);
+            }
+        });
     }
 
     public static void clearCartBadge(Context context, TextView badgeView) {
