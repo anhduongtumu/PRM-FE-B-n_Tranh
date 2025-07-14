@@ -58,7 +58,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems = new ArrayList<>();
 
-    private double subtotal = 0.0, shipping = 30000.0, discount = 0.0, total = 0.0;
+    private double subtotal = 0.0, shipping = 0.0, discount = 0.0, total = 0.0;
     private NumberFormat currencyFormat;
 
     @Override
@@ -215,7 +215,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
         for (CartItem item : cartItems) {
             subtotal += item.getTotalPrice();
         }
-        shipping = subtotal >= 1000000 ? 0.0 : 30000.0;
+        shipping = subtotal >= 1000000 ? 0.0 : 0.0;
         total = subtotal + shipping - discount;
     }
 

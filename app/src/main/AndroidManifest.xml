@@ -58,6 +58,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.BillingActivity" />
+        <activity android:name=".activity.OrderHistoryActivity" />
 
         <service
             android:name=".utils.MyFirebaseMessagingService"
