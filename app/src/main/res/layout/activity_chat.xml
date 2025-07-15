@@ -33,6 +33,20 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/item_chat_message_sent"/>
 
+    <TextView
+        android:id="@+id/textViewEmptyChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hãy bắt đầu cuộc trò chuyện để chúng tôi có thể hỗ trợ bạn!"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnBackground"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/recyclerViewChat"
+        app:layout_constraintBottom_toBottomOf="@id/recyclerViewChat"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <LinearLayout
         android:id="@+id/layoutSendMessage"
         android:layout_width="0dp"

@@ -68,7 +68,7 @@ public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolde
     }
 
     private String formatTimestamp(Timestamp ts) {
-        if (ts == null) return "N/A";
+        if (ts == null) return "Đang gửi...";
 
         Date date = ts.toDate();
         Date today = new Date();
