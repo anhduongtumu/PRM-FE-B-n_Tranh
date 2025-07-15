@@ -29,14 +29,11 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.project.R;
 import com.example.project.adapter.BannerAdapter;
 import com.example.project.adapter.ProductAdapter;
-import com.example.project.dto.cart.CreateCartDto;
-import com.example.project.dto.cartItem.CreateCartItemDto;
 import com.example.project.model.Cart;
 import com.example.project.model.CartItem;
 import com.example.project.model.Product;
 import com.example.project.network.ApiClient;
 import com.example.project.service.AuthService;
-import com.example.project.service.CartItemService;
 import com.example.project.service.CartService;
 import com.example.project.service.ProductService;
 import com.example.project.utils.CartManager;
@@ -46,9 +43,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -177,7 +172,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public static void updateCartBadge(Context context, TextView tvCartBadge) {
         UserManager userManager = new UserManager(context);
+
+        // Add null check
+        if (userManager.getUser() == null) {
+            Log.e("CartManager", "User is null");
+            if (tvCartBadge != null) {
+                tvCartBadge.setVisibility(View.GONE);
+            }
+            return;
+        }
+
         int userId = userManager.getUser().getId();
+        Log.d("CartManager", "Getting cart for user ID: " + userId);
+
+        // Create final references for use in lambda expressions
+        final TextView cartBadgeRef = tvCartBadge;
+        final Context contextRef = context;
 
         CartService cartService = ApiClient.getClient(context).create(CartService.class);
         Call<Cart> call = cartService.getCartByUserId(userId);
@@ -187,28 +197,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onResponse(Call<Cart> call, Response<Cart> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Cart cart = response.body();
+                    Log.d("CartManager", "Cart received: " + cart.toString());
+
                     List<CartItem> items = cart.getCartItems();
+                    Log.d("CartManager", "Cart items: " + (items != null ? items.size() : "null"));
 
                     int totalQuantity = 0;
                     if (items != null) {
                         for (CartItem item : items) {
                             totalQuantity += item.getQuantity();
+                            Log.d("CartManager", "Item quantity: " + item.getQuantity());
                         }
                     }
 
-                    if (totalQuantity > 0) {
-                        tvCartBadge.setVisibility(View.VISIBLE);
-                        tvCartBadge.setText(String.valueOf(totalQuantity));
-                    } else {
-                        tvCartBadge.setVisibility(View.GONE);
-                    }
-                }
+                    Log.d("CartManager", "Total quantity: " + totalQuantity);
 
+                    // Create final reference for totalQuantity to use in lambda
+                    final int finalTotalQuantity = totalQuantity;
+
+                    // Update UI on main thread
+                    if (cartBadgeRef != null) {
+                        if (contextRef instanceof AppCompatActivity) {
+                            ((AppCompatActivity) contextRef).runOnUiThread(() -> {
+                                if (finalTotalQuantity > 0) {
+                                    cartBadgeRef.setVisibility(View.VISIBLE);
+                                    cartBadgeRef.setText(String.valueOf(finalTotalQuantity));
+                                } else {
+                                    cartBadgeRef.setVisibility(View.GONE);
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    Log.e("CartManager", "Response not successful or body is null. Code: " + response.code());
+                }
             }
 
             @Override
             public void onFailure(Call<Cart> call, Throwable t) {
                 Log.e("CartManager", "Failed to get cart count", t);
+                if (cartBadgeRef != null && contextRef instanceof AppCompatActivity) {
+                    ((AppCompatActivity) contextRef).runOnUiThread(() -> {
+                        cartBadgeRef.setVisibility(View.GONE);
+                    });
+                }
             }
         });
     }
@@ -384,7 +416,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         sliderHandler.postDelayed(sliderRunnable, 3000);
         // Refresh cart count when returning to activity
-        CartManager.updateCartBadge(this, tvCartBadge);
+        updateCartBadge(this, tvCartBadge);
     }
 
     @Override
@@ -403,7 +435,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void setupProductRecyclerView() {
-        // Gọi API để lấy danh sách sản phẩm từ server
+        // Create final references for use in lambda expressions
+        final TextView cartBadgeRef = tvCartBadge;
+        final MainActivity mainActivityRef = this;
+
+        // Call API to get product list from server
         ProductService productService = ApiClient.getClient(this).create(ProductService.class);
         Call<List<Product>> call = productService.getAllProducts();
 
@@ -413,38 +449,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> productList = response.body();
 
-                    // Khởi tạo adapter và gán dữ liệu thực từ API
+                    // Initialize adapter with real data from API
                     productAdapter = new ProductAdapter(productList);
 
                     productAdapter.setOnProductClickListener(new ProductAdapter.OnProductClickListener() {
                         @Override
                         public void onProductClick(Product product) {
-                            Intent intent = new Intent(MainActivity.this, ProductDetailActivity.class);
+                            Intent intent = new Intent(mainActivityRef, ProductDetailActivity.class);
                             intent.putExtra("product", product);
                             startActivity(intent);
                         }
 
                         @Override
                         public void onAddToCartClick(Product product) {
-                            CartManager.addToCart(MainActivity.this, product, () -> {
-                                CartManager.updateCartBadge(MainActivity.this, tvCartBadge);
+                            CartManager.addToCart(mainActivityRef, product, () -> {
+                                updateCartBadge(mainActivityRef, cartBadgeRef);
                             });
                         }
                     });
 
                     LinearLayoutManager layoutManager = new LinearLayoutManager(
-                            MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
+                            mainActivityRef, LinearLayoutManager.HORIZONTAL, false);
                     recyclerHotProducts.setLayoutManager(layoutManager);
                     recyclerHotProducts.setAdapter(productAdapter);
                     recyclerHotProducts.setHasFixedSize(true);
                 } else {
-                    Toast.makeText(MainActivity.this, "Không thể tải sản phẩm", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mainActivityRef, "Không thể tải sản phẩm", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(mainActivityRef, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -467,6 +503,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void logoutUser() {
+        // Create final references for use in lambda expressions
+        final TokenManager tokenManager = new TokenManager(this);
+        final UserManager userManagerRef = userManager;
+        final MainActivity mainActivityRef = this;
+
         AuthService authService = ApiClient.getClient(this).create(AuthService.class);
         Call<Void> call = authService.logout();
 
@@ -474,30 +515,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
-                    // Xóa token và trạng thái đăng nhập
-                    TokenManager tokenManager = new TokenManager(MainActivity.this);
+                    // Clear token and login state
                     tokenManager.clearToken();
-                    userManager.clearUser();
+                    userManagerRef.clearUser();
 
                     SharedPreferences prefs = getSharedPreferences("user_session", MODE_PRIVATE);
                     prefs.edit().clear().apply();
 
-                    Toast.makeText(MainActivity.this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mainActivityRef, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
 
                     updateNavigationMenu();
 
-                    // Optionally chuyển về LoginActivity hoặc Home
-                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    // Optionally navigate to LoginActivity or Home
+                    Intent intent = new Intent(mainActivityRef, LoginActivity.class);
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(MainActivity.this, "Không thể đăng xuất", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mainActivityRef, "Không thể đăng xuất", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(mainActivityRef, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

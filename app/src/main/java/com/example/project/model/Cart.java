@@ -1,6 +1,8 @@
 
 package com.example.project.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -10,6 +12,7 @@ public class Cart implements Serializable {
     private double totalPrice;
     private String status;
 
+    @SerializedName("CartItems")
     private List<CartItem> cartItems;
 
     public Cart() {}
