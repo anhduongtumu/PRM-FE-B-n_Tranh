@@ -184,11 +184,11 @@ public class SearchActivity extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.nav_search) {
                 return true; // Already on search page
-            } else if (itemId == R.id.nav_notifications) {
-                // Handle notifications click
-                return true;
             } else if (itemId == R.id.nav_account) {
-                // Handle account click
+                startActivity(new Intent(this, UserProfileActivity.class));
+                return true;
+            } else if (itemId == R.id.nav_orders) {
+                startActivity(new Intent(this, OrderHistoryActivity.class));
                 return true;
             }
             return false;

@@ -265,10 +265,8 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private void setupBottomNavigation() {
         bottomNavigation = findViewById(R.id.bottom_navigation);
-
         if (bottomNavigation != null) {
             bottomNavigation.setSelectedItemId(R.id.nav_account);
-
             bottomNavigation.setOnItemSelectedListener(item -> {
                 int itemId = item.getItemId();
                 if (itemId == R.id.nav_home) {
@@ -279,10 +277,10 @@ public class UserProfileActivity extends AppCompatActivity {
                 } else if (itemId == R.id.nav_search) {
                     startActivity(new Intent(this, SearchActivity.class));
                     return true;
-                } else if (itemId == R.id.nav_notifications) {
-                    // startActivity(new Intent(this, NotificationsActivity.class));
-                    return true;
                 } else if (itemId == R.id.nav_account) {
+                    return true;
+                } else if (itemId == R.id.nav_orders) {
+                    startActivity(new Intent(this, OrderHistoryActivity.class));
                     return true;
                 }
                 return false;

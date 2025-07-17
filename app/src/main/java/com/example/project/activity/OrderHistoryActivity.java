@@ -1,5 +1,6 @@
 package com.example.project.activity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +16,7 @@ import com.example.project.R;
 import com.example.project.adapter.OrderHistoryAdapter;
 import com.example.project.model.Order;
 import com.example.project.service.OrderService;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.List;
 
@@ -31,6 +33,7 @@ public class OrderHistoryActivity extends AppCompatActivity {
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
 
+    private BottomNavigationView bottomNavigation;
     private RecyclerView recyclerOrderHistory;
     private OrderService orderService;
     private OrderHistoryAdapter adapter;
@@ -48,9 +51,11 @@ public class OrderHistoryActivity extends AppCompatActivity {
 
         recyclerOrderHistory = findViewById(R.id.recyclerOrderHistory);
         recyclerOrderHistory.setLayoutManager(new LinearLayoutManager(this));
+        bottomNavigation = findViewById(R.id.bottom_navigation);
 
         setupRetrofit();
         loadOrderHistory();
+        setupBottomNavigation();
     }
 
     private void setupRetrofit() {
@@ -97,6 +102,27 @@ public class OrderHistoryActivity extends AppCompatActivity {
                 Toast.makeText(OrderHistoryActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "API Failure: " + t.getMessage());
             }
+        });
+    }
+
+    private void setupBottomNavigation() {
+        bottomNavigation.setSelectedItemId(R.id.nav_orders);
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_search) {
+                startActivity(new Intent(this, SearchActivity.class));
+                return true;
+            } else if (itemId == R.id.nav_account) {
+                startActivity(new Intent(this, UserProfileActivity.class));
+                return true;
+            } else if (itemId == R.id.nav_orders) {
+                return true;
+            }
+            return false;
         });
     }
 }
