@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -385,15 +386,20 @@ public class OrderConfirmationActivity extends AppCompatActivity {
             // Create adapter
             orderItemAdapter = new OrderItemAdapter(order.getOrderItems());
 
-            // Create LinearLayoutManager and disable nested scrolling
+            // Create LinearLayoutManager
             LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-            layoutManager.setAutoMeasureEnabled(true);
 
-            // Setup RecyclerView
+            // Setup RecyclerView with ENABLED scrolling
             recyclerOrderItems.setLayoutManager(layoutManager);
             recyclerOrderItems.setAdapter(orderItemAdapter);
-            recyclerOrderItems.setNestedScrollingEnabled(false);
-            recyclerOrderItems.setHasFixedSize(false);
+
+            // ENABLE nested scrolling to work with ScrollView
+            recyclerOrderItems.setNestedScrollingEnabled(true);
+
+            // Set a fixed height or use match_parent for height
+            ViewGroup.LayoutParams params = recyclerOrderItems.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            recyclerOrderItems.setLayoutParams(params);
 
             // Force RecyclerView to measure all items
             recyclerOrderItems.post(() -> {
@@ -401,7 +407,6 @@ public class OrderConfirmationActivity extends AppCompatActivity {
                     orderItemAdapter.notifyDataSetChanged();
                 }
 
-                // Debug info
                 Log.d(TAG, "RecyclerView height: " + recyclerOrderItems.getHeight());
                 Log.d(TAG, "RecyclerView child count: " + recyclerOrderItems.getChildCount());
                 Log.d(TAG, "Adapter item count: " + orderItemAdapter.getItemCount());
