@@ -5,8 +5,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.view.MenuItem; // Needed for handling Toolbar item clicks
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull; // For @NonNull annotation
@@ -78,10 +80,10 @@ public class ChatActivity extends AppCompatActivity {
             );
 
             FirebaseUtil.createChatIfNotExists(
+                    customerName,
                     chatId,
                     String.valueOf(currentUserId),
                     String.valueOf(otherUserId),
-                    customerName,
                     unused -> loadMessagesFromFirestore(),
                     e -> Toast.makeText(this, "Failed to create chat: " + e.getMessage(), Toast.LENGTH_SHORT).show()
             );
@@ -99,6 +101,27 @@ public class ChatActivity extends AppCompatActivity {
         recyclerViewChat.setAdapter(chatAdapter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerViewChat.setLayoutManager(layoutManager);
+
+        TextView textViewEmptyChat = findViewById(R.id.textViewEmptyChat);
+
+        Runnable updateEmptyState = () -> {
+            if (chatAdapter.getItemCount() == 0) {
+                textViewEmptyChat.setVisibility(View.VISIBLE);
+            } else {
+                textViewEmptyChat.setVisibility(View.GONE);
+            }
+        };
+
+        updateEmptyState.run();
+
+        chatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() { updateEmptyState.run(); }
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) { updateEmptyState.run(); }
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) { updateEmptyState.run(); }
+        });
     }
 
 //    private void sendMessage() {
