@@ -9,6 +9,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.project.utils.CartManager;
 import com.google.gson.JsonObject;
 
 import androidx.annotation.Nullable;
@@ -315,6 +317,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                     item.setQuantity(newQuantity); // cập nhật local
                     calculatePrices();
                     updatePriceViews();
+                    CartManager.refreshCartCount(CartActivity.this );
                 } else {
                     Toast.makeText(CartActivity.this, "Cập nhật số lượng thất bại", Toast.LENGTH_SHORT).show();
                 }

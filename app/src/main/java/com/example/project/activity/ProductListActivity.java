@@ -17,7 +17,6 @@ import com.example.project.model.Product;
 import com.example.project.network.ApiClient;
 import com.example.project.service.ProductService;
 import com.example.project.utils.CartManager;
-import com.example.project.utils.CartNotificationManager;
 
 import java.util.List;
 
@@ -71,10 +70,7 @@ public class ProductListActivity extends AppCompatActivity {
                         public void onAddToCartClick(Product product) {
                             CartManager.addToCart(ProductListActivity.this, product, () -> {
                                 Toast.makeText(ProductListActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
-                                CartNotificationManager.showCartNotification(
-                                        ProductListActivity.this,
-                                        CartManager.getCartCount(ProductListActivity.this)
-                                );
+                              
                             });
                         }
                     });

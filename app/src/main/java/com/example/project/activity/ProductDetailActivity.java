@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.project.R;
 import com.example.project.model.Product;
-import com.example.project.utils.CartNotificationManager;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
@@ -176,7 +175,6 @@ public class ProductDetailActivity extends AppCompatActivity {
                 // Reset button state
                 btnAddToCart.setEnabled(true);
                 btnAddToCart.setText("Thêm vào giỏ hàng");
-                CartNotificationManager.showCartNotification(ProductDetailActivity.this, CartManager.getCartCount(ProductDetailActivity.this));
                 // Optional: Reset quantity to 1 after adding
                 currentQuantity = 1;
                 updateQuantityDisplay();
