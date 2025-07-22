@@ -80,7 +80,9 @@ public class CartManager {
                             "Đã thêm vào giỏ hàng" :
                             "Đã thêm " + quantity + " sản phẩm vào giỏ hàng";
                     Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show();
-                    updateCartCount(context, response.body().getId());
+                    updateCartCount(context, response.body().getCartItems());
+
+
                     if (callback != null) callback.onSuccess();
                 } else {
                     String errorMsg = "Không thể thêm sản phẩm";
@@ -128,7 +130,7 @@ public class CartManager {
             public void onResponse(Call<Cart> call, Response<Cart> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Toast.makeText(context, "Đã cập nhật số lượng", Toast.LENGTH_SHORT).show();
-                    updateCartCount(context, response.body().getId());
+                    updateCartCount(context, response.body().getCartItems());
                     if (callback != null) callback.onSuccess();
                 } else {
                     String errorMsg = "Không thể cập nhật số lượng";
@@ -146,29 +148,15 @@ public class CartManager {
         });
     }
 
-    private static void updateCartCount(Context context, int cartId) {
-        CartItemService cartItemService = ApiClient.getClient(context).create(CartItemService.class);
-        cartItemService.getAllCartItems().enqueue(new Callback<List<CartItem>>() {
-            @Override
-            public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    int count = 0;
-                    for (CartItem item : response.body()) {
-                        if (item.getCartID() == cartId) {
-                            count += item.getQuantity(); // Count total quantity, not just items
-                        }
-                    }
-                    SharedPreferences prefs = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
-                    prefs.edit().putInt(CART_COUNT_KEY, count).apply();
-                    Log.d("CartManager", "Updated cart count: " + count);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<CartItem>> call, Throwable t) {
-                Log.e("CartManager", "Failed to update cart count: " + t.getMessage());
-            }
-        });
+    private static void updateCartCount(Context context, List<CartItem> cartItems) {
+        int count = 0;
+        for (CartItem item : cartItems) {
+            count += item.getQuantity();
+        }
+        SharedPreferences prefs = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
+        prefs.edit().putInt(CART_COUNT_KEY, count).apply();
+        CartNotificationManager.applyBadgeCount(context, count);
+        Log.d("CartManager", "Updated cart count: " + count);
     }
 
     // Method to get current cart count
@@ -178,10 +166,10 @@ public class CartManager {
     }
 
     // Method to refresh cart count from server
-    public static void refreshCartCount(Context context, CartCallback callback) {
+    public static void refreshCartCount(Context context) {
         int userId = new UserManager(context).getUser().getId();
         if (userId <= 0) {
-            if (callback != null) callback.onError("Invalid user");
+            Log.e("CartManager", "Invalid user ID: " + userId);
             return;
         }
 
@@ -190,16 +178,16 @@ public class CartManager {
             @Override
             public void onResponse(Call<Cart> call, Response<Cart> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    updateCartCount(context, response.body().getId());
-                    if (callback != null) callback.onSuccess();
+                    updateCartCount(context, response.body().getCartItems());
+                    Log.d("CartManager", "Cart refreshed successfully for user: " + userId);
                 } else {
-                    if (callback != null) callback.onError("Failed to refresh cart");
+                    Log.e("CartManager", "Failed to refresh cart: " + (response.errorBody() != null ? response.errorBody().toString() : "Unknown error"));
                 }
             }
 
             @Override
             public void onFailure(Call<Cart> call, Throwable t) {
-                if (callback != null) callback.onError(t.getMessage());
+                Log.e("CartManager", "Network error while refreshing cart: " + t.getMessage());
             }
         });
     }
