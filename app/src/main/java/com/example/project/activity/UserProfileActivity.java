@@ -147,7 +147,7 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void initRetrofit() {
-        String baseUrl = "https://web-production-b71f7.up.railway.app/";
+        String baseUrl = "https://prm-be-ban-tranh.vercel.app/";
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)

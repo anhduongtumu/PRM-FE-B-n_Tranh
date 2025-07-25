@@ -246,6 +246,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                 public void onResponse(Call<Void> call, Response<Void> response) {
                     cartItems.remove(item);
                     cartAdapter.notifyDataSetChanged();
+                    calculatePrices();
+                    updatePriceViews();
+                    CartManager.refreshCartCount(CartActivity.this );
                     updateUI();
                 }
 
@@ -338,6 +341,9 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                 cartItems.remove(item);
                 cartAdapter.updateCartItems(cartItems);
                 recyclerCartItems.post(() -> updateUI()); // Delay nhẹ để đảm bảo cập nhật UI sau khi data đã vào RecyclerView
+                calculatePrices();
+                updatePriceViews();
+                CartManager.refreshCartCount(CartActivity.this );
                 Toast.makeText(CartActivity.this, "Đã xóa sản phẩm khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
             }
 

@@ -25,7 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class OrderHistoryActivity extends AppCompatActivity {
 
-    private static final String BASE_URL = "https://web-production-b71f7.up.railway.app/";
+    private static final String BASE_URL = "https://prm-be-ban-tranh.vercel.app/";
     private static final String TAG = "OrderHistoryActivity";
 
     private static final String PREF_NAME = "user_prefs";
