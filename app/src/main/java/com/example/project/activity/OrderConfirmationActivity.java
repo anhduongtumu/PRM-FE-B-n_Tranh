@@ -22,6 +22,7 @@ import com.example.project.model.Product;
 import com.example.project.model.User;
 import com.example.project.service.OrderService;
 import com.example.project.service.UserService;
+import com.example.project.utils.CartManager;
 import com.google.android.material.button.MaterialButton;
 
 import java.text.NumberFormat;
@@ -66,7 +67,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
     private Retrofit retrofit;
 
     // Constants
-    private static final String BASE_URL = "https://web-production-b71f7.up.railway.app/";
+    private static final String BASE_URL = "https://prm-be-ban-tranh.vercel.app/";
     private static final String TAG = "OrderConfirmation";
 
     // SharedPreferences constants (matching UserProfileActivity)
@@ -85,6 +86,7 @@ public class OrderConfirmationActivity extends AppCompatActivity {
         setupRetrofit();
         handleDeepLink(); // Handle deep link first
         loadOrderData();
+        CartManager.refreshCartCount(OrderConfirmationActivity.this );
         setupClickListeners();
     }
 

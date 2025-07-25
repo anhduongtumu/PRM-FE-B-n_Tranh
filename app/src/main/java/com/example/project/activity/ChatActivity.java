@@ -241,7 +241,13 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     chatAdapter.submitList(new ArrayList<>(messagesList));
                     if (shouldScroll) {
-                        recyclerViewChat.scrollToPosition(chatAdapter.getItemCount() - 1);
+                        chatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                            @Override
+                            public void onItemRangeInserted(int positionStart, int itemCount) {
+                                recyclerViewChat.scrollToPosition(chatAdapter.getItemCount() - 1);
+                            }
+                        });
+
                     }
                 }
             });
